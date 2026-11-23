@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>NexTalent.Identidad.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexTalent.Identidad.Domain\NexTalent.Identidad.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
