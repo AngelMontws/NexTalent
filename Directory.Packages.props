@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Aqui se agregan las versiones de paquetes, una linea por paquete.
+         Los proyectos .csproj solo ponen el nombre, sin version. -->
+  </ItemGroup>
+
+</Project>

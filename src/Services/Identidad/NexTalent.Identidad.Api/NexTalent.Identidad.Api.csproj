@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>NexTalent.Identidad.Api</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexTalent.Identidad.Application\NexTalent.Identidad.Application.csproj" />
+    <ProjectReference Include="..\NexTalent.Identidad.Infrastructure\NexTalent.Identidad.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
