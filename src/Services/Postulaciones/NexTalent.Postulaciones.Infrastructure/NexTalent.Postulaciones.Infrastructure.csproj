@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>NexTalent.Postulaciones.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexTalent.Postulaciones.Application\NexTalent.Postulaciones.Application.csproj" />
+  </ItemGroup>
+
+</Project>
