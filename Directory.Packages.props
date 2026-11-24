@@ -4,9 +4,9 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
+  <!-- Una linea por paquete. Los proyectos .csproj solo ponen el nombre, sin version. -->
   <ItemGroup>
-    <!-- Aqui se agregan las versiones de paquetes, una linea por paquete.
-         Los proyectos .csproj solo ponen el nombre, sin version. -->
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.1" />
   </ItemGroup>
 
 </Project>
