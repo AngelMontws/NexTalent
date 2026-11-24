@@ -41,6 +41,107 @@ services:
       retries: 10
       start_period: 40s
 
+  # Contenedor de un solo uso: crea la base y los esquemas y termina (Exited 0).
+  sqlserver-init:
+    image: nextalent/sqlserver-fts:2025
+    pull_policy: never
+    container_name: nextalent-sqlserver-init
+    restart: "no"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Falta MSSQL_SA_PASSWORD en el archivo .env}
+    volumes:
+      - ./docker/sqlserver/init:/init:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["/opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -b -i /init/crear-esquemas.sql"]
+
+  identidad:
+    build:
+      context: .
+      dockerfile: docker/dotnet/Dockerfile
+      args:
+        PROYECTO: src/Services/Identidad/NexTalent.Identidad.Api
+        ASSEMBLY: NexTalent.Identidad.Api
+    image: nextalent/identidad:dev
+    container_name: nextalent-identidad
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "5001"
+
+  vacantes:
+    build:
+      context: .
+      dockerfile: docker/dotnet/Dockerfile
+      args:
+        PROYECTO: src/Services/Vacantes/NexTalent.Vacantes.Api
+        ASSEMBLY: NexTalent.Vacantes.Api
+    image: nextalent/vacantes:dev
+    container_name: nextalent-vacantes
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "5002"
+
+  postulaciones:
+    build:
+      context: .
+      dockerfile: docker/dotnet/Dockerfile
+      args:
+        PROYECTO: src/Services/Postulaciones/NexTalent.Postulaciones.Api
+        ASSEMBLY: NexTalent.Postulaciones.Api
+    image: nextalent/postulaciones:dev
+    container_name: nextalent-postulaciones
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "5003"
+
+  notificaciones:
+    build:
+      context: .
+      dockerfile: docker/dotnet/Dockerfile
+      args:
+        PROYECTO: src/Services/Notificaciones/NexTalent.Notificaciones.Api
+        ASSEMBLY: NexTalent.Notificaciones.Api
+    image: nextalent/notificaciones:dev
+    container_name: nextalent-notificaciones
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "5004"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: docker/dotnet/Dockerfile
+      args:
+        PROYECTO: src/Gateway/NexTalent.Gateway
+        ASSEMBLY: NexTalent.Gateway
+    image: nextalent/gateway:dev
+    container_name: nextalent-gateway
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "5000"
+      ReverseProxy__Clusters__identidad__Destinations__principal__Address: http://identidad:5001
+      ReverseProxy__Clusters__vacantes__Destinations__principal__Address: http://vacantes:5002
+      ReverseProxy__Clusters__postulaciones__Destinations__principal__Address: http://postulaciones:5003
+      ReverseProxy__Clusters__notificaciones__Destinations__principal__Address: http://notificaciones:5004
+    depends_on:
+      identidad:
+        condition: service_started
+      vacantes:
+        condition: service_started
+      postulaciones:
+        condition: service_started
+      notificaciones:
+        condition: service_started
+
 volumes:
   rabbitmq-data:
   sqlserver-data:
