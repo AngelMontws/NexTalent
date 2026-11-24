@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>NexTalent.Notificaciones.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexTalent.Notificaciones.Application\NexTalent.Notificaciones.Application.csproj" />
+  </ItemGroup>
+
+</Project>
