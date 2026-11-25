@@ -19,6 +19,25 @@ public static class Textos
     public static string CodigoReenviado(string telefono) =>
         $"Enviamos un nuevo código al número terminado en {telefono[^4..]}.";
 
+    /// <summary>
+    /// HU-07.03. Se agrega el folio al duplicado porque la historia lo exige, y se omite el CV del perfil
+    /// incompleto porque el documento v5 no lo pide. Frontend no dio texto para vacante cerrada: es provisional.
+    /// </summary>
+    public static string Postulacion(ResultadoPostulacion r, string? urlMiCuenta) => r.Tipo switch
+    {
+        TipoResultado.Creada =>
+            $"¡Postulación enviada!\nTu perfil se registró correctamente.\nFolio: {r.Folio}\n"
+            + "Consulta el estado en Mis postulaciones.",
+        TipoResultado.YaPostulado =>
+            "Ya te postulaste a esta vacante.\nTu postulación está registrada; consulta su estado y folio en "
+            + "Mis postulaciones." + (r.Folio is null ? "" : $"\nFolio: {r.Folio}"),
+        TipoResultado.PerfilIncompleto =>
+            "Tu perfil está incompleto.\nRevisa los datos obligatorios en Mi cuenta para continuar con la postulación."
+            + (urlMiCuenta is null ? "" : $"\n{urlMiCuenta}"),
+        TipoResultado.VacanteCerrada => "La vacante ya está cerrada.",
+        _ => throw new ArgumentOutOfRangeException(nameof(r))
+    };
+
     /// <summary>P-02. El enlace de similares se omite mientras no exista la pagina.</summary>
     public static string Estatus(EstatusCambiado e, string? urlSimilares)
     {

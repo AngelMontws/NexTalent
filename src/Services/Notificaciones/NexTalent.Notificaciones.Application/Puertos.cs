@@ -11,6 +11,9 @@ public interface IContactos
 {
     Task<Contacto?> ObtenerAsync(Guid usuarioId, CancellationToken ct);
     Task<Contacto?> BuscarPorTelefonoAsync(string telefono, CancellationToken ct);
+
+    /// <summary>Por BSUID, porque Meta puede omitir el telefono.</summary>
+    Task<Contacto?> BuscarPorUsuarioWhatsappAsync(string usuarioWhatsapp, CancellationToken ct);
     Task ActivarWhatsappAsync(Guid usuarioId, string telefono, DateTimeOffset fechaConsentimiento, CancellationToken ct);
     Task DesactivarWhatsappAsync(Guid usuarioId, DateTimeOffset fecha, CancellationToken ct);
 }

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Services\Notificaciones\NexTalent.Notificaciones.Application\NexTalent.Notificaciones.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Services\Notificaciones\NexTalent.Notificaciones.Infrastructure\NexTalent.Notificaciones.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
