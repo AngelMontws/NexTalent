@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NexTalent.Notificaciones.Domain\NexTalent.Notificaciones.Domain.csproj" />
+    <ProjectReference Include="..\..\..\NexTalent.Contracts\NexTalent.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
