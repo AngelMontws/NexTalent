@@ -82,7 +82,7 @@ Provisional: por ahora se usa `sa` solo para desarrollo local. Está por decidir
 
 ## RabbitMQ
 
-Panel web: `http://localhost:15672`, con el usuario y la contraseña de tu `.env`. Conexión AMQP: `localhost:5672` desde tu máquina y `rabbitmq:5672` desde otro contenedor. Todavía no hay ninguna biblioteca de mensajería instalada (MassTransit está pendiente de decisión): no la instales por tu cuenta.
+Panel web: `http://localhost:15672`, con el usuario y la contraseña de tu `.env`. Conexión AMQP: `localhost:5672` desde tu máquina y `rabbitmq:5672` desde otro contenedor. Todavía no hay ninguna biblioteca de mensajería instalada. Está decidido usar MassTransit 8.x (código abierto), que se fija en `Directory.Packages.props` antes de la semana 6: no la instales por tu cuenta.
 
 ## Correr un servicio sin su contenedor
 
@@ -131,9 +131,9 @@ Cada servicio tiene 4 proyectos (`NexTalent.<Servicio>.Api`, `.Application`, `.D
 
 ## Decisiones abiertas
 
-- Biblioteca de mensajería para RabbitMQ (MassTransit 8.x u otra opción), antes de la semana 6.
+- Instalar MassTransit 8.x (ya decidido; Wolverine como plan B) y fijarlo en `Directory.Packages.props` antes de la semana 6.
 - Usuario de SQL por servicio en lugar de `sa`, nombre y collation de la base.
-- Quién construye el perfil del candidato y quién ejecuta la caducidad diaria de vacantes.
+- Quién construye el perfil del candidato.
 
 ## Cómo trabajamos
 
