@@ -65,6 +65,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Postulaciones", "Postulacio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexTalent.Postulaciones.Domain.Tests", "tests\Services\Postulaciones\NexTalent.Postulaciones.Domain.Tests\NexTalent.Postulaciones.Domain.Tests.csproj", "{F55DF1D7-7750-423B-8BF8-36FA188EABE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NexTalent.Contracts.Tests", "tests\NexTalent.Contracts.Tests\NexTalent.Contracts.Tests.csproj", "{6A436635-BF92-4870-A0C7-A4071F9D7D7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -315,6 +317,18 @@ Global
 		{F55DF1D7-7750-423B-8BF8-36FA188EABE8}.Release|x64.Build.0 = Release|Any CPU
 		{F55DF1D7-7750-423B-8BF8-36FA188EABE8}.Release|x86.ActiveCfg = Release|Any CPU
 		{F55DF1D7-7750-423B-8BF8-36FA188EABE8}.Release|x86.Build.0 = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|x64.Build.0 = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Debug|x86.Build.0 = Debug|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|x64.ActiveCfg = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|x64.Build.0 = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|x86.ActiveCfg = Release|Any CPU
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -349,5 +363,6 @@ Global
 		{8EED0326-88AB-497E-9740-FFA48670E5E5} = {6306A8FB-679E-111F-6585-8F70E0EE6013}
 		{11611205-4D54-3A9A-E26F-5650023A83B7} = {4353066B-F410-E540-F593-55E469B78A5F}
 		{F55DF1D7-7750-423B-8BF8-36FA188EABE8} = {11611205-4D54-3A9A-E26F-5650023A83B7}
+		{6A436635-BF92-4870-A0C7-A4071F9D7D7C} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
