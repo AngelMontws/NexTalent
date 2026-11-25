@@ -26,6 +26,11 @@ internal sealed class Memoria : TimeProvider, IContactos, IVinculaciones, INotif
     public Task<Contacto?> BuscarPorTelefonoAsync(string telefono, CancellationToken ct) =>
         Task.FromResult(Contactos.Values.FirstOrDefault(c => c.TelefonoWhatsapp == telefono));
 
+    public Dictionary<string, Guid> UsuariosWhatsapp { get; } = [];
+
+    public Task<Contacto?> BuscarPorUsuarioWhatsappAsync(string usuarioWhatsapp, CancellationToken ct) =>
+        Task.FromResult(UsuariosWhatsapp.TryGetValue(usuarioWhatsapp, out var id) ? Contactos[id] : null);
+
     public Task ActivarWhatsappAsync(Guid usuarioId, string telefono, DateTimeOffset fecha, CancellationToken ct)
     {
         Contactos[usuarioId] = Contactos[usuarioId] with { TelefonoWhatsapp = telefono, WhatsappOptIn = true };
