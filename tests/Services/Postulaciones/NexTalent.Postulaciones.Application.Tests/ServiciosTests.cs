@@ -279,6 +279,46 @@ public class ServiciosTests
     }
 
     [Fact]
+    public async Task Whatsapp_CreaConCanalYDevuelveFolioTambienEnDuplicado()
+    {
+        var primera = await _candidatos.PostularDesdeWhatsappAsync(_candidato.Id, Vacante, Ct);
+        var segunda = await _candidatos.PostularDesdeWhatsappAsync(_candidato.Id, Vacante, Ct);
+
+        Assert.Equal(new ResultadoWhatsapp(ResultadoWhatsapp.Creada, "F-1"), primera);
+        Assert.Equal(new ResultadoWhatsapp(ResultadoWhatsapp.YaPostulado, "F-1"), segunda);
+        Assert.Equal(CanalOrigen.WhatsApp, Assert.Single(_m.Postulaciones).CanalOrigen);
+    }
+
+    [Fact]
+    public async Task Whatsapp_PerfilIncompletoYVacanteCerrada_NoLanzan()
+    {
+        var incompleto = Guid.NewGuid();
+        PonerCandidato(incompleto, [], nombre: true, contacto: true);
+        Assert.Equal(ResultadoWhatsapp.PerfilIncompleto,
+            (await _candidatos.PostularDesdeWhatsappAsync(incompleto, Vacante, Ct)).Tipo);
+
+        PonerVacante(abierta: false);
+        Assert.Equal(ResultadoWhatsapp.VacanteCerrada,
+            (await _candidatos.PostularDesdeWhatsappAsync(_candidato.Id, Vacante, Ct)).Tipo);
+    }
+
+    [Fact]
+    public async Task Web_GuardaCanalWeb()
+    {
+        await _candidatos.PostularAsync(_candidato, Vacante, Ct);
+
+        Assert.Equal(CanalOrigen.Web, Assert.Single(_m.Postulaciones).CanalOrigen);
+    }
+
+    [Fact]
+    public void ResultadoWhatsapp_CoincideConNotificaciones()
+    {
+        Assert.Equal(
+            ["Creada", "PerfilIncompleto", "VacanteCerrada", "YaPostulado"],
+            typeof(ResultadoWhatsapp).GetFields().Select(f => (string)f.GetRawConstantValue()!).Order());
+    }
+
+    [Fact]
     public void Contratos_UsanLosMismosTextosQueElDominio()
     {
         Assert.Equal(Textos(typeof(Estados)), Enum.GetNames<EstadoPostulacion>().Order());

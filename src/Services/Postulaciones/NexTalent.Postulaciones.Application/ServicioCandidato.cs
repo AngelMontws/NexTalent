@@ -17,6 +17,15 @@ public sealed record PostulacionResumen(
 /// <summary>Sin autor ni motivo: falta acordar si el candidato los ve.</summary>
 public sealed record EtapaHistorial(EstadoPostulacion? Anterior, EstadoPostulacion Nuevo, DateTimeOffset Fecha);
 
+/// <summary>Tipo: los mismos textos que espera Notificaciones (TipoResultado).</summary>
+public sealed record ResultadoWhatsapp(string Tipo, string? Folio)
+{
+    public const string Creada = "Creada";
+    public const string YaPostulado = "YaPostulado";
+    public const string PerfilIncompleto = "PerfilIncompleto";
+    public const string VacanteCerrada = "VacanteCerrada";
+}
+
 public sealed record PostulacionDetalle(PostulacionResumen Resumen, IReadOnlyList<EtapaHistorial> Historial);
 
 /// <summary>HU-05.01, HU-05.02 y HU-05.04.</summary>
@@ -29,9 +38,41 @@ public sealed class ServicioCandidato(
 {
     public const int HabilidadesMinimas = 3;
 
-    public async Task<PostulacionResumen> PostularAsync(Usuario usuario, Guid vacanteId, CancellationToken ct)
+    public Task<PostulacionResumen> PostularAsync(Usuario usuario, Guid vacanteId, CancellationToken ct)
     {
         usuario.ExigirCandidato();
+        return PostularAsync(usuario.Id, vacanteId, CanalOrigen.Web, ct);
+    }
+
+    /// <summary>
+    /// HU-07.03, desde Notificaciones. Devuelve el resultado en vez de lanzar, e incluye el folio del duplicado.
+    /// VacanteNoDisponibleException si se propaga: Notificaciones reintenta.
+    /// </summary>
+    public async Task<ResultadoWhatsapp> PostularDesdeWhatsappAsync(Guid candidatoId, Guid vacanteId, CancellationToken ct)
+    {
+        try
+        {
+            var r = await PostularAsync(candidatoId, vacanteId, CanalOrigen.WhatsApp, ct);
+            return new(ResultadoWhatsapp.Creada, r.Folio);
+        }
+        catch (YaPostuladoException)
+        {
+            return new(ResultadoWhatsapp.YaPostulado, (await postulaciones.BuscarAsync(candidatoId, vacanteId, ct))?.Folio);
+        }
+        catch (PerfilIncompletoException)
+        {
+            return new(ResultadoWhatsapp.PerfilIncompleto, null);
+        }
+        catch (VacanteNoAbiertaException)
+        {
+            return new(ResultadoWhatsapp.VacanteCerrada, null);
+        }
+    }
+
+    private async Task<PostulacionResumen> PostularAsync(
+        Guid candidatoId, Guid vacanteId, CanalOrigen canal, CancellationToken ct)
+    {
+        var usuario = new Usuario(candidatoId, Usuario.RolCandidato, null);
 
         if (await postulaciones.BuscarAsync(usuario.Id, vacanteId, ct) is not null)
         {
@@ -55,7 +96,8 @@ public sealed class ServicioCandidato(
             vacanteId,
             CalculadoraCoincidencia.Calcular(candidato.Habilidades, vacante.Habilidades),
             vacante.Abierta,
-            reloj.GetUtcNow());
+            reloj.GetUtcNow(),
+            canal);
 
         postulaciones.Agregar(postulacion);
         await unidad.PublicarAsync(Eventos.Creada(postulacion, vacante), ct);
