@@ -1,13 +1,13 @@
--- NexTalent: base de datos y esquemas vacios (uno por servicio).
+-- NexTalent: base de datos NexTalentDb y esquemas vacios (uno por servicio).
 -- Es idempotente: se puede ejecutar varias veces sin error.
 
-IF DB_ID(N'NexTalent') IS NULL
+IF DB_ID(N'NexTalentDb') IS NULL
 BEGIN
-    CREATE DATABASE [NexTalent];
+    CREATE DATABASE [NexTalentDb];
 END
 GO
 
-USE [NexTalent];
+USE [NexTalentDb];
 GO
 
 IF SCHEMA_ID(N'identidad') IS NULL EXEC(N'CREATE SCHEMA [identidad]');

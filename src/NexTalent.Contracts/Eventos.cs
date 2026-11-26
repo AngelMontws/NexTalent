@@ -6,14 +6,15 @@ namespace NexTalent.Contracts;
 // - Estados, causas y niveles viajan como texto (ver Valores.cs).
 // - Nunca viajan CURP, CV, direccion, datos bancarios ni contrasenas.
 
-/// <summary>Identidad aprueba o rechaza una empresa.</summary>
+/// <summary>Identidad aprueba o rechaza una empresa. Motivo solo lo usa Notificaciones para el correo.</summary>
 public sealed record EmpresaVerificada(
     Guid EventoId,
     DateTimeOffset OcurridoEn,
     Guid EmpresaId,
     string Nombre,
     bool Verificada,
-    long Version);
+    long Version,
+    string? Motivo = null);
 
 /// <summary>Nivel: ver <see cref="Niveles"/>.</summary>
 public sealed record HabilidadDePerfil(Guid HabilidadId, string Nivel);
@@ -26,6 +27,37 @@ public sealed record PerfilHabilidadesActualizado(
     IReadOnlyList<HabilidadDePerfil> Habilidades,
     bool TieneNombre,
     bool TieneContacto,
+    long Version);
+
+/// <summary>
+/// Identidad publica el contacto de un usuario. Contiene datos personales:
+/// solo lo consume Notificaciones y no se registra en logs.
+/// </summary>
+public sealed record ContactoActualizado(
+    Guid EventoId,
+    DateTimeOffset OcurridoEn,
+    Guid UsuarioId,
+    string Rol,
+    Guid? EmpresaId,
+    string Email,
+    string? TelefonoWhatsapp,
+    bool WhatsappOptIn,
+    DateTimeOffset? WhatsappOptInFecha,
+    long Version);
+
+/// <summary>
+/// Notificaciones confirma o revoca el consentimiento de WhatsApp (codigo OTP o palabra BAJA).
+/// Identidad actualiza usuario.whatsapp_opt_in al consumirlo.
+/// </summary>
+public sealed record ConsentimientoWhatsappCambiado(
+    Guid EventoId,
+    DateTimeOffset OcurridoEn,
+    Guid UsuarioId,
+    string Rol,
+    Guid? EmpresaId,
+    string? TelefonoWhatsapp,
+    bool OptIn,
+    DateTimeOffset? OptInFecha,
     long Version);
 
 /// <summary>Nivel: ver <see cref="Niveles"/>.</summary>

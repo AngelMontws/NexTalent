@@ -6,9 +6,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG PROYECTO
 WORKDIR /src
+
+# Copiar primero archivos de solucion y paquetes para cachear el restore
 COPY global.json Directory.Build.props Directory.Packages.props ./
 COPY src/ src/
-RUN dotnet publish "${PROYECTO}" -c Release -o /app/publish --nologo
+
+RUN dotnet restore "${PROYECTO}" --nologo \
+    && dotnet publish "${PROYECTO}" -c Release -o /app/publish --no-restore --nologo
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 ARG ASSEMBLY
