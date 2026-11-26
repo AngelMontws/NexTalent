@@ -114,7 +114,9 @@ public class ServiciosTests
 
     [Theory]
     [InlineData("reclutador")]
+    [InlineData("Reclutador")]
     [InlineData("admin")]
+    [InlineData("Administrador")]
     [InlineData("")]
     public async Task Candidato_RolIncorrecto_EsRechazado(string rol)
     {
@@ -123,6 +125,17 @@ public class ServiciosTests
         await Assert.ThrowsAsync<AccesoDenegadoException>(() => _candidatos.PostularAsync(otro, Vacante, Ct));
         await Assert.ThrowsAsync<AccesoDenegadoException>(() => _candidatos.MisPostulacionesAsync(otro, null, Ct));
         await Assert.ThrowsAsync<AccesoDenegadoException>(() => _candidatos.DetalleAsync(otro, Guid.NewGuid(), Ct));
+    }
+
+    [Theory]
+    [InlineData("Candidato")]
+    [InlineData("candidato")]
+    [InlineData("CANDIDATO")]
+    public async Task Candidato_RolSinImportarMayusculas_PuedePostular(string rol)
+    {
+        var r = await _candidatos.PostularAsync(new Usuario(_candidato.Id, rol, null), Vacante, Ct);
+
+        Assert.Equal("F-1", r.Folio);
     }
 
     [Fact]

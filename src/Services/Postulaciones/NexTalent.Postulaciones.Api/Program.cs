@@ -35,7 +35,7 @@ if (!string.IsNullOrWhiteSpace(conexion))
     if (builder.Configuration["RabbitMq:Host"] is { Length: > 0 } rabbit)
     {
         builder.Services.AgregarMensajeria(
-            rabbit, builder.Configuration["RabbitMq:Usuario"] ?? "", builder.Configuration["RabbitMq:Contrasena"] ?? "");
+            rabbit, builder.Configuration["RabbitMq:Username"] ?? "", builder.Configuration["RabbitMq:Password"] ?? "");
     }
 }
 

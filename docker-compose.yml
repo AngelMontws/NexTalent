@@ -98,6 +98,22 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "5003"
+      # Backend 2. Base, JWT y RabbitMQ: valores del .env (ver .env.example).
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NexTalentDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
+      Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
+      Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
+      Interno__ApiKey: ${INTERNO_API_KEY:?Falta INTERNO_API_KEY en el archivo .env}
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:?Falta RABBITMQ_USER en el archivo .env}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Falta RABBITMQ_PASSWORD en el archivo .env}
+      # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
+      DatabaseSeed__RunInitializers: "true"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   notificaciones:
     build:
@@ -112,6 +128,24 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "5004"
+      # Backend 2. Base, JWT y RabbitMQ: valores del .env (ver .env.example).
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NexTalentDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
+      Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
+      Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
+      Interno__ApiKey: ${INTERNO_API_KEY:?Falta INTERNO_API_KEY en el archivo .env}
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:?Falta RABBITMQ_USER en el archivo .env}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Falta RABBITMQ_PASSWORD en el archivo .env}
+      # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
+      DatabaseSeed__RunInitializers: "true"
+      Whatsapp__VerifyToken: ${WHATSAPP_VERIFY_TOKEN:-}
+      Whatsapp__AppSecret: ${WHATSAPP_APP_SECRET:-}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   gateway:
     build:
