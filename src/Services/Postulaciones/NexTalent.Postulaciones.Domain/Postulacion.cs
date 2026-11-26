@@ -6,7 +6,16 @@ namespace NexTalent.Postulaciones.Domain;
 /// </summary>
 public sealed class Postulacion
 {
+    /// <summary>Limite de historial_estado.motivo en el diccionario de datos.</summary>
+    public const int MotivoMaximo = 300;
+
     private readonly List<CambioEstado> _historial = [];
+
+    /// <summary>Solo para EF Core al leer de la base de datos.</summary>
+    private Postulacion()
+    {
+        Folio = null!;
+    }
 
     private Postulacion(
         Guid id,
@@ -37,7 +46,14 @@ public sealed class Postulacion
     public int DeseablesCumplidas { get; }
 
     public DateTimeOffset CreadaEn { get; }
+    public CanalOrigen CanalOrigen { get; private init; }
     public EstadoPostulacion EstadoActual { get; private set; }
+
+    /// <summary>Inicio de la etapa actual: dias en la etapa y plazo de 10 dias habiles.</summary>
+    public DateTimeOffset EtapaActualizadaEn { get; private set; }
+
+    /// <summary>Se reinicia con cada cambio de etapa (RN-04).</summary>
+    public bool RecordatorioEnviado { get; private set; }
     public IReadOnlyList<CambioEstado> Historial => _historial.AsReadOnly();
 
     /// <summary>T01. El duplicado y el perfil minimo se validan en Application.</summary>
@@ -48,7 +64,8 @@ public sealed class Postulacion
         Guid vacanteId,
         ResultadoCoincidencia coincidencia,
         bool vacanteAbierta,
-        DateTimeOffset fecha)
+        DateTimeOffset fecha,
+        CanalOrigen canal = CanalOrigen.Web)
     {
         ExigirId(id, nameof(id));
         ExigirId(candidatoId, nameof(candidatoId));
@@ -61,8 +78,16 @@ public sealed class Postulacion
             throw new VacanteNoAbiertaException();
         }
 
+        if (!Enum.IsDefined(canal))
+        {
+            throw new ArgumentOutOfRangeException(nameof(canal));
+        }
+
         var postulacion = new Postulacion(
-            id, folio.Trim(), candidatoId, vacanteId, coincidencia, fecha.ToUniversalTime());
+            id, folio.Trim(), candidatoId, vacanteId, coincidencia, fecha.ToUniversalTime())
+        {
+            CanalOrigen = canal
+        };
         postulacion.Registrar(null, EstadoPostulacion.Enviada, CausaCambio.Creacion, candidatoId, null, fecha);
         return postulacion;
     }
@@ -100,8 +125,16 @@ public sealed class Postulacion
             throw new MotivoObligatorioException();
         }
 
+        if (motivo?.Trim().Length > MotivoMaximo)
+        {
+            throw new ArgumentException($"El motivo admite hasta {MotivoMaximo} caracteres.", nameof(motivo));
+        }
+
         return Registrar(EstadoActual, destino, causa, reclutadorId, motivo, fecha);
     }
+
+    /// <summary>Recordatorio de 10 dias habiles enviado al reclutador. No cambia el estado.</summary>
+    public void MarcarRecordatorioEnviado() => RecordatorioEnviado = true;
 
     /// <summary>T05. Se puede repetir sin efecto; devuelve null si ya no estaba pendiente.</summary>
     public CambioEstado? CerrarPorVacante(string? motivo, DateTimeOffset fecha) =>
@@ -122,6 +155,8 @@ public sealed class Postulacion
             _historial.Count + 1, anterior, nuevo, causa, autor, texto, fecha.ToUniversalTime());
         _historial.Add(cambio);
         EstadoActual = nuevo;
+        EtapaActualizadaEn = cambio.Fecha;
+        RecordatorioEnviado = false;
         return cambio;
     }
 
