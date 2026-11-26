@@ -4,6 +4,8 @@
   </PropertyGroup>
   <!-- Una linea por paquete. Los proyectos .csproj solo ponen el nombre, sin version. -->
   <ItemGroup>
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.12" />
+    <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.15" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.15" />

@@ -195,3 +195,135 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE TABLE [postulaciones].[InboxState] (
+        [Id] bigint NOT NULL IDENTITY,
+        [MessageId] uniqueidentifier NOT NULL,
+        [ConsumerId] uniqueidentifier NOT NULL,
+        [LockId] uniqueidentifier NOT NULL,
+        [RowVersion] rowversion NULL,
+        [Received] datetime2 NOT NULL,
+        [ReceiveCount] int NOT NULL,
+        [ExpirationTime] datetime2 NULL,
+        [Consumed] datetime2 NULL,
+        [Delivered] datetime2 NULL,
+        [LastSequenceNumber] bigint NULL,
+        CONSTRAINT [PK_InboxState] PRIMARY KEY ([Id]),
+        CONSTRAINT [AK_InboxState_MessageId_ConsumerId] UNIQUE ([MessageId], [ConsumerId])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE TABLE [postulaciones].[OutboxState] (
+        [OutboxId] uniqueidentifier NOT NULL,
+        [LockId] uniqueidentifier NOT NULL,
+        [RowVersion] rowversion NULL,
+        [Created] datetime2 NOT NULL,
+        [Delivered] datetime2 NULL,
+        [LastSequenceNumber] bigint NULL,
+        CONSTRAINT [PK_OutboxState] PRIMARY KEY ([OutboxId])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE TABLE [postulaciones].[OutboxMessage] (
+        [SequenceNumber] bigint NOT NULL IDENTITY,
+        [EnqueueTime] datetime2 NULL,
+        [SentTime] datetime2 NOT NULL,
+        [Headers] nvarchar(max) NULL,
+        [Properties] nvarchar(max) NULL,
+        [InboxMessageId] uniqueidentifier NULL,
+        [InboxConsumerId] uniqueidentifier NULL,
+        [OutboxId] uniqueidentifier NULL,
+        [MessageId] uniqueidentifier NOT NULL,
+        [ContentType] nvarchar(256) NOT NULL,
+        [MessageType] nvarchar(max) NOT NULL,
+        [Body] nvarchar(max) NOT NULL,
+        [ConversationId] uniqueidentifier NULL,
+        [CorrelationId] uniqueidentifier NULL,
+        [InitiatorId] uniqueidentifier NULL,
+        [RequestId] uniqueidentifier NULL,
+        [SourceAddress] nvarchar(256) NULL,
+        [DestinationAddress] nvarchar(256) NULL,
+        [ResponseAddress] nvarchar(256) NULL,
+        [FaultAddress] nvarchar(256) NULL,
+        [ExpirationTime] datetime2 NULL,
+        CONSTRAINT [PK_OutboxMessage] PRIMARY KEY ([SequenceNumber]),
+        CONSTRAINT [FK_OutboxMessage_InboxState_InboxMessageId_InboxConsumerId] FOREIGN KEY ([InboxMessageId], [InboxConsumerId]) REFERENCES [postulaciones].[InboxState] ([MessageId], [ConsumerId]),
+        CONSTRAINT [FK_OutboxMessage_OutboxState_OutboxId] FOREIGN KEY ([OutboxId]) REFERENCES [postulaciones].[OutboxState] ([OutboxId])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE INDEX [IX_InboxState_Delivered] ON [postulaciones].[InboxState] ([Delivered]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE INDEX [IX_OutboxMessage_EnqueueTime] ON [postulaciones].[OutboxMessage] ([EnqueueTime]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE INDEX [IX_OutboxMessage_ExpirationTime] ON [postulaciones].[OutboxMessage] ([ExpirationTime]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_OutboxMessage_InboxMessageId_InboxConsumerId_SequenceNumber] ON [postulaciones].[OutboxMessage] ([InboxMessageId], [InboxConsumerId], [SequenceNumber]) WHERE [InboxMessageId] IS NOT NULL AND [InboxConsumerId] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    EXEC(N'CREATE UNIQUE INDEX [IX_OutboxMessage_OutboxId_SequenceNumber] ON [postulaciones].[OutboxMessage] ([OutboxId], [SequenceNumber]) WHERE [OutboxId] IS NOT NULL');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    CREATE INDEX [IX_OutboxState_Created] ON [postulaciones].[OutboxState] ([Created]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [postulaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261126051100_AgregaOutboxMassTransit'
+)
+BEGIN
+    INSERT INTO [postulaciones].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261126051100_AgregaOutboxMassTransit', N'10.0.15');
+END;
+
+COMMIT;
+GO
+

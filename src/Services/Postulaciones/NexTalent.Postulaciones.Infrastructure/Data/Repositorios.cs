@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -95,10 +96,11 @@ public sealed class GeneradorFolio(PostulacionesDbContext db) : IGeneradorFolio
 }
 
 /// <summary>
-/// PROVISIONAL: los eventos se conservan en memoria y no se publican. Con MassTransit (tarea 2.3) se guardaran
-/// en la Outbox dentro de la misma transaccion.
+/// Con MassTransit configurado, Publish guarda el evento en OutboxMessage y SaveChanges lo confirma junto con
+/// los datos: o se guardan ambos o ninguno (RNF-09). Sin RabbitMQ configurado, solo se registra un aviso.
 /// </summary>
-public sealed class UnidadDeTrabajo(PostulacionesDbContext db, ILogger<UnidadDeTrabajo> log) : IUnidadDeTrabajo
+public sealed class UnidadDeTrabajo(
+    PostulacionesDbContext db, ILogger<UnidadDeTrabajo> log, IPublishEndpoint? bus = null) : IUnidadDeTrabajo
 {
     private const int LlaveDuplicada = 2601;
     private const int RestriccionUnica = 2627;
@@ -107,9 +109,11 @@ public sealed class UnidadDeTrabajo(PostulacionesDbContext db, ILogger<UnidadDeT
 
     public IReadOnlyList<object> EventosSinPublicar => _eventos;
 
-    public Task PublicarAsync(PostulacionCreada evento, CancellationToken ct) => Anotar(evento);
+    public Task PublicarAsync(PostulacionCreada evento, CancellationToken ct) =>
+        bus is null ? Anotar(evento) : bus.Publish(evento, ct);
 
-    public Task PublicarAsync(EstatusCambiado evento, CancellationToken ct) => Anotar(evento);
+    public Task PublicarAsync(EstatusCambiado evento, CancellationToken ct) =>
+        bus is null ? Anotar(evento) : bus.Publish(evento, ct);
 
     public async Task GuardarAsync(CancellationToken ct)
     {
@@ -133,7 +137,7 @@ public sealed class UnidadDeTrabajo(PostulacionesDbContext db, ILogger<UnidadDeT
 
         if (_eventos.Count > 0)
         {
-            log.LogWarning("{Cantidad} eventos sin publicar: falta conectar MassTransit.", _eventos.Count);
+            log.LogWarning("{Cantidad} eventos sin publicar: RabbitMQ no esta configurado.", _eventos.Count);
         }
     }
 

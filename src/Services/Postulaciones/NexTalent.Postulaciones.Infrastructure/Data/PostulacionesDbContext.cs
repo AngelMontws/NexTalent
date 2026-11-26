@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NexTalent.Postulaciones.Domain;
@@ -30,6 +31,11 @@ public sealed class PostulacionesDbContext(DbContextOptions<PostulacionesDbConte
     protected override void OnModelCreating(ModelBuilder modelo)
     {
         modelo.HasDefaultSchema(Esquema);
+
+        // Transactional Outbox e Inbox de MassTransit (RNF-09): InboxState, OutboxMessage y OutboxState.
+        modelo.AddInboxStateEntity();
+        modelo.AddOutboxMessageEntity();
+        modelo.AddOutboxStateEntity();
         modelo.HasSequence<long>(SecuenciaFolio, Esquema).StartsAt(1);
 
         modelo.Entity<Postulacion>(e =>

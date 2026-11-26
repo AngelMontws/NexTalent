@@ -30,6 +30,13 @@ var conexion = builder.Configuration.GetConnectionString("DefaultConnection");
 if (!string.IsNullOrWhiteSpace(conexion))
 {
     builder.Services.AgregarPersistencia(conexion);
+
+    // Sin RabbitMQ configurado, los eventos solo se registran en el log y no se consumen.
+    if (builder.Configuration["RabbitMq:Host"] is { Length: > 0 } rabbit)
+    {
+        builder.Services.AgregarMensajeria(
+            rabbit, builder.Configuration["RabbitMq:Usuario"] ?? "", builder.Configuration["RabbitMq:Contrasena"] ?? "");
+    }
 }
 
 var app = builder.Build();
