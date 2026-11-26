@@ -1,10 +1,10 @@
 namespace NexTalent.Postulaciones.Application;
 
-/// <summary>Datos del JWT: sub, role y empresa_id.</summary>
+/// <summary>Datos del JWT: sub, role (Candidato, Reclutador, Administrador) y empresa_id. El rol se compara sin distinguir mayusculas.</summary>
 public sealed record Usuario(Guid Id, string Rol, Guid? EmpresaId)
 {
-    public const string RolCandidato = "candidato";
-    public const string RolReclutador = "reclutador";
+    public const string RolCandidato = "Candidato";
+    public const string RolReclutador = "Reclutador";
 
     internal void ExigirCandidato() => Exigir(RolCandidato);
 
