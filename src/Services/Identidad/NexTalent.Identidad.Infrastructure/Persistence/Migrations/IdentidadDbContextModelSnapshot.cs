@@ -18,10 +18,57 @@ namespace NexTalent.Identidad.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("identidad")
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.BitacoraModeracionEmpresa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<Guid>("AdministradorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("administrador_id");
+
+                    b.Property<string>("Decision")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("decision");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("empresa_id");
+
+                    b.Property<DateTime>("Fecha")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("fecha")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("motivo");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdministradorId");
+
+                    b.HasIndex("EmpresaId", "Fecha")
+                        .HasDatabaseName("IX_BitacoraEmpresa_Empresa_Fecha");
+
+                    b.ToTable("bitacora_moderacion_empresa", "identidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_BitacoraEmpresa_Decision", "[decision] IN ('Aprobada','Rechazada')");
+
+                            t.HasCheckConstraint("CK_BitacoraEmpresa_Motivo", "LEN(LTRIM(RTRIM([motivo]))) >= 5");
+                        });
+                });
 
             modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Candidato", b =>
                 {
@@ -207,6 +254,170 @@ namespace NexTalent.Identidad.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.ExperienciaLaboral", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<Guid>("CandidatoId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("candidato_id");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<string>("EmpresaNombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(160)")
+                        .HasColumnName("empresa_nombre");
+
+                    b.Property<bool>("EsActual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("es_actual");
+
+                    b.Property<DateOnly?>("FechaFin")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_fin");
+
+                    b.Property<DateOnly>("FechaInicio")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_inicio");
+
+                    b.Property<string>("Puesto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(120)")
+                        .HasColumnName("puesto");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidatoId")
+                        .HasDatabaseName("IX_ExperienciaLaboral_Candidato");
+
+                    b.ToTable("experiencia_laboral", "identidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_ExperienciaLaboral_Fechas", "[es_actual] = 1 OR ([fecha_fin] IS NOT NULL AND [fecha_fin] >= [fecha_inicio])");
+                        });
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.FormacionAcademica", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<Guid>("CandidatoId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("candidato_id");
+
+                    b.Property<bool>("EsActual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("es_actual");
+
+                    b.Property<DateOnly?>("FechaFin")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_fin");
+
+                    b.Property<DateOnly>("FechaInicio")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_inicio");
+
+                    b.Property<string>("Institucion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(160)")
+                        .HasColumnName("institucion");
+
+                    b.Property<string>("TituloGrado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(160)")
+                        .HasColumnName("titulo_grado");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidatoId")
+                        .HasDatabaseName("IX_FormacionAcademica_Candidato");
+
+                    b.ToTable("formacion_academica", "identidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_FormacionAcademica_Fechas", "[es_actual] = 1 OR ([fecha_fin] IS NOT NULL AND [fecha_fin] >= [fecha_inicio])");
+                        });
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Reclutador", b =>
+                {
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<bool>("AprobadoEmpresa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("aprobado_empresa");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("empresa_id");
+
+                    b.Property<string>("NombreContacto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(120)")
+                        .HasColumnName("nombre_contacto");
+
+                    b.HasKey("UsuarioId");
+
+                    b.HasIndex("EmpresaId")
+                        .HasDatabaseName("IX_Reclutador_Empresa");
+
+                    b.ToTable("reclutador", "identidad");
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTime>("ExpiraEn")
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("expira_en");
+
+                    b.Property<DateTime?>("RevocadoEn")
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("revocado_en");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("varchar(128)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_RefreshToken_Hash");
+
+                    b.HasIndex("UsuarioId", "ExpiraEn")
+                        .HasDatabaseName("IX_RefreshToken_Usuario_Expira");
+
+                    b.ToTable("refresh_token", "identidad");
+                });
+
             modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -294,6 +505,25 @@ namespace NexTalent.Identidad.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.BitacoraModeracionEmpresa", b =>
+                {
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", "Administrador")
+                        .WithMany()
+                        .HasForeignKey("AdministradorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Empresa", "Empresa")
+                        .WithMany("Bitacora")
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Administrador");
+
+                    b.Navigation("Empresa");
+                });
+
             modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Candidato", b =>
                 {
                     b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", "Usuario")
@@ -316,14 +546,81 @@ namespace NexTalent.Identidad.Infrastructure.Persistence.Migrations
                     b.Navigation("Candidato");
                 });
 
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.ExperienciaLaboral", b =>
+                {
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Candidato", "Candidato")
+                        .WithMany("Experiencias")
+                        .HasForeignKey("CandidatoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Candidato");
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.FormacionAcademica", b =>
+                {
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Candidato", "Candidato")
+                        .WithMany("Formaciones")
+                        .HasForeignKey("CandidatoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Candidato");
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Reclutador", b =>
+                {
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Empresa", "Empresa")
+                        .WithMany("Reclutadores")
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", "Usuario")
+                        .WithOne("Reclutador")
+                        .HasForeignKey("NexTalent.Identidad.Infrastructure.Persistence.Entities.Reclutador", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", "Usuario")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Candidato", b =>
                 {
+                    b.Navigation("Experiencias");
+
+                    b.Navigation("Formaciones");
+
                     b.Navigation("Habilidades");
+                });
+
+            modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Empresa", b =>
+                {
+                    b.Navigation("Bitacora");
+
+                    b.Navigation("Reclutadores");
                 });
 
             modelBuilder.Entity("NexTalent.Identidad.Infrastructure.Persistence.Entities.Usuario", b =>
                 {
                     b.Navigation("Candidato");
+
+                    b.Navigation("Reclutador");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

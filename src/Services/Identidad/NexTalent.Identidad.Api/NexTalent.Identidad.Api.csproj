@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all"/>
   </ItemGroup>
 
 </Project>

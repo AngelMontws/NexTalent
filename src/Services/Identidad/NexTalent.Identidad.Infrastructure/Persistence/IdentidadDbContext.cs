@@ -12,6 +12,13 @@ public sealed class IdentidadDbContext(DbContextOptions<IdentidadDbContext> opti
     public DbSet<Empresa> Empresas => Set<Empresa>();
     public DbSet<Candidato> Candidatos => Set<Candidato>();
     public DbSet<CandidatoHabilidad> CandidatoHabilidades => Set<CandidatoHabilidad>();
+    public DbSet<BitacoraModeracionEmpresa> BitacoraModeracionEmpresas => Set<BitacoraModeracionEmpresa>();
+    public DbSet<ExperienciaLaboral> ExperienciaLaborales => Set<ExperienciaLaboral>();
+    public DbSet<FormacionAcademica> FormacionAcademica => Set<FormacionAcademica>();
+    public DbSet<Reclutador> Reclutadores => Set<Reclutador>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,5 +27,10 @@ public sealed class IdentidadDbContext(DbContextOptions<IdentidadDbContext> opti
         modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
         modelBuilder.ApplyConfiguration(new CandidatoConfiguration());
         modelBuilder.ApplyConfiguration(new CandidatoHabilidadConfiguration());
+        modelBuilder.ApplyConfiguration(new BitacoraModeracionEmpresaConfiguration());
+        modelBuilder.ApplyConfiguration(new ExperienciaLaboralConfiguration());
+        modelBuilder.ApplyConfiguration(new FormacionAcademicaConfiguration());
+        modelBuilder.ApplyConfiguration(new ReclutadorConfiguration());
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 }

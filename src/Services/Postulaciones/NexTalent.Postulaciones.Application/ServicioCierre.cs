@@ -39,4 +39,22 @@ public sealed class ServicioCierre(
 
         return cerradas;
     }
+
+    /// <summary>RN-04: sincroniza la bandera recordatorio_10d_enviado tras enviar el recordatorio desde Notificaciones.</summary>
+    public async Task<bool> MarcarRecordatorioAsync(Guid postulacionId, CancellationToken ct)
+    {
+        var p = await postulaciones.ObtenerAsync(postulacionId, ct);
+        if (p is null)
+        {
+            return false;
+        }
+
+        if (!p.RecordatorioEnviado)
+        {
+            p.MarcarRecordatorioEnviado();
+            await unidad.GuardarAsync(ct);
+        }
+
+        return true;
+    }
 }

@@ -24,4 +24,6 @@ public sealed class Candidato
 
     public Usuario Usuario { get; set; } = null!;
     public List<CandidatoHabilidad> Habilidades { get; set; } = [];
+    public List<ExperienciaLaboral> Experiencias { get; set; } = [];
+    public List<FormacionAcademica> Formaciones { get; set; } = [];
 }

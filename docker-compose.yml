@@ -8,12 +8,14 @@ x-service-common: &service-common
   depends_on:
     sqlserver:
       condition: service_healthy
+    sqlserver-init:
+      condition: service_completed_successfully
     rabbitmq:
       condition: service_healthy
 
 x-service-env: &service-env
   ASPNETCORE_ENVIRONMENT: Development
-  ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-NexTalent};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
+  ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-NexTalentDb};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;"
   RabbitMQ__Host: rabbitmq
   RabbitMQ__Port: "5672"
   RabbitMQ__Username: ${RABBITMQ_USER}
@@ -74,7 +76,7 @@ services:
     volumes:
       - ./docker/sqlserver/init:/init:ro
     entrypoint: ["/bin/bash", "-c"]
-    command: ["/opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P \"$MSSQL_SA_PASSWORD\" -C -b -i /init/crear-esquemas.sql"]
+    command: ["/opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P \"$MSSQL_SA_PASSWORD\" -C -I -b -i /init/crear-esquemas.sql"]
 
   identidad:
     <<: *service-common
@@ -89,6 +91,8 @@ services:
     environment:
       <<: *service-env
       ASPNETCORE_HTTP_PORTS: "5001"
+      # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
+      DatabaseSeed__RunInitializers: "true"
 
   vacantes:
     <<: *service-common
@@ -103,6 +107,9 @@ services:
     environment:
       <<: *service-env
       ASPNETCORE_HTTP_PORTS: "5002"
+      # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
+      DatabaseSeed__RunInitializers: "true"
+      DatabaseSeed__SeedBenchmark50k: "false"
 
   postulaciones:
     <<: *service-common
@@ -118,7 +125,7 @@ services:
       <<: *service-env
       ASPNETCORE_HTTP_PORTS: "5003"
       # Backend 2. Base, JWT y RabbitMQ: valores del .env (ver .env.example).
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NexTalentDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-NexTalentDb};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
       Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
       Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
       Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
@@ -131,6 +138,8 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
 
@@ -148,7 +157,7 @@ services:
       <<: *service-env
       ASPNETCORE_HTTP_PORTS: "5004"
       # Backend 2. Base, JWT y RabbitMQ: valores del .env (ver .env.example).
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=NexTalentDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-NexTalentDb};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True"
       Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
       Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
       Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
@@ -158,11 +167,14 @@ services:
       RabbitMq__Password: ${RABBITMQ_PASSWORD:?Falta RABBITMQ_PASSWORD en el archivo .env}
       # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
       DatabaseSeed__RunInitializers: "true"
+      Servicios__PostulacionesUrl: http://postulaciones:5003
       Whatsapp__VerifyToken: ${WHATSAPP_VERIFY_TOKEN:-}
       Whatsapp__AppSecret: ${WHATSAPP_APP_SECRET:-}
     depends_on:
       sqlserver:
         condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
 

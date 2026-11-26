@@ -9,7 +9,7 @@ public sealed class IdentidadDbContextFactory : IDesignTimeDbContextFactory<Iden
     public IdentidadDbContext CreateDbContext(string[] args)
     {
         var cadena = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-            ?? "Server=127.0.0.1,1433;Database=NexTalentDb;User Id=sa;Password=disenio;TrustServerCertificate=True;";
+            ?? "Server=127.0.0.1,1433;Database=NexTalentDb;User Id=sa;Password=definir-en-ConnectionStrings__DefaultConnection;TrustServerCertificate=True;";
 
         var opciones = new DbContextOptionsBuilder<IdentidadDbContext>();
         DependencyInjection.UsarSqlServer(opciones, cadena);

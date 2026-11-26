@@ -17,4 +17,6 @@ public sealed class Usuario
     public DateTime CreadoEn { get; set; }
 
     public Candidato? Candidato { get; set; }
+    public Reclutador? Reclutador { get; set; }
+    public List<RefreshToken> RefreshTokens { get; set; } = [];
 }

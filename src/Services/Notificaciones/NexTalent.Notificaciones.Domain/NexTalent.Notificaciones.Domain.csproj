@@ -4,4 +4,8 @@
     <RootNamespace>NexTalent.Notificaciones.Domain</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="NexTalent.Notificaciones.Infrastructure" />
+  </ItemGroup>
+
 </Project>
