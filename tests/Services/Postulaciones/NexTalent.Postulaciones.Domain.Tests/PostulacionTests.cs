@@ -185,6 +185,51 @@ public class PostulacionTests
     }
 
     [Fact]
+    public void CadaCambio_ActualizaLaEtapaYReiniciaElRecordatorio()
+    {
+        var p = Nueva();
+        Assert.Equal(p.Historial[0].Fecha, p.EtapaActualizadaEn);
+        p.MarcarRecordatorioEnviado();
+        Assert.True(p.RecordatorioEnviado);
+
+        p.Mover(EstadoPostulacion.EnRevision, Reclutador, true, null, Fecha.AddDays(3));
+
+        Assert.False(p.RecordatorioEnviado);
+        Assert.Equal(Fecha.AddDays(3), p.EtapaActualizadaEn);
+    }
+
+    [Fact]
+    public void Crear_GuardaElCanal()
+    {
+        Assert.Equal(CanalOrigen.Web, Nueva().CanalOrigen);
+        Assert.Equal(CanalOrigen.WhatsApp, Postulacion.Crear(
+            Guid.NewGuid(), "F-1", Guid.NewGuid(), Guid.NewGuid(), new(75m, 3, 4, 0), true, Fecha, CanalOrigen.WhatsApp)
+            .CanalOrigen);
+        Assert.Throws<ArgumentOutOfRangeException>(() => Postulacion.Crear(
+            Guid.NewGuid(), "F-1", Guid.NewGuid(), Guid.NewGuid(), new(75m, 3, 4, 0), true, Fecha, (CanalOrigen)9));
+    }
+
+    [Theory]
+    [InlineData(300, true)]
+    [InlineData(301, false)]
+    public void Motivo_HastaTrescientosCaracteres(int largo, bool permitido)
+    {
+        var p = En(EstadoPostulacion.NoSeleccionado);
+        var motivo = new string('a', largo);
+
+        if (permitido)
+        {
+            p.Mover(EstadoPostulacion.Vista, Reclutador, true, motivo, Fecha);
+            Assert.Equal(EstadoPostulacion.Vista, p.EstadoActual);
+        }
+        else
+        {
+            Assert.Throws<ArgumentException>(() => p.Mover(EstadoPostulacion.Vista, Reclutador, true, motivo, Fecha));
+            Assert.Equal(EstadoPostulacion.NoSeleccionado, p.EstadoActual);
+        }
+    }
+
+    [Fact]
     public void Mover_SinReclutador_Falla()
     {
         Assert.Throws<ArgumentException>(

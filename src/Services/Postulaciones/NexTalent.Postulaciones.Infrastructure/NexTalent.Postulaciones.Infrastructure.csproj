@@ -8,4 +8,10 @@
     <ProjectReference Include="..\NexTalent.Postulaciones.Application\NexTalent.Postulaciones.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Solo para crear migraciones: no viaja a la Api. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+
 </Project>

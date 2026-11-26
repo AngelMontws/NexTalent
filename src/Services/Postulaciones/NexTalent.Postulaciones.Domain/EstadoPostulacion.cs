@@ -11,6 +11,13 @@ public enum EstadoPostulacion
     NoSeleccionado = 6
 }
 
+/// <summary>Por donde llego la postulacion (canal_origen del diccionario de datos).</summary>
+public enum CanalOrigen
+{
+    Web = 1,
+    WhatsApp = 2
+}
+
 /// <summary>Por que cambio el estado (T01 a T06 de docs/backend2/maquina-estados.md).</summary>
 public enum CausaCambio
 {
