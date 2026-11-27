@@ -1,5 +1,7 @@
 using NexTalent.Postulaciones.Api;
 using NexTalent.Postulaciones.Api.Middleware;
+using NexTalent.Postulaciones.Api.TiempoReal;
+using NexTalent.Postulaciones.Application;
 using NexTalent.Postulaciones.Infrastructure;
 using NexTalent.Postulaciones.Infrastructure.Data;
 
@@ -20,6 +22,9 @@ builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ManejoErrores>();
 builder.Services.AgregarJwt(builder.Configuration);
+builder.Services.AddSignalR();
+// Antes de AgregarPersistencia, que solo pone su version vacia si no hay otra.
+builder.Services.AddSingleton<IAvisosTiempoReal, AvisosSignalR>();
 builder.Services.AddSwaggerGen(opciones =>
 {
     opciones.SwaggerDoc("v1", new() { Title = "NexTalent - Postulaciones", Version = "v1" });
@@ -63,5 +68,6 @@ app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
+app.MapHub<HubEstatus>(HubEstatus.Ruta);
 
 app.Run();

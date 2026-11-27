@@ -168,6 +168,31 @@ El detalle de tablas es la tarea 1.4 y lo aprueba Base de Datos. Las réplicas n
 
 El contexto de Backend 2 dice que Notificaciones avisa por SignalR; el v5 ubica el hub en **Postulaciones** y el gateway ya enruta `/hubs/estatus` ahí. Se sigue el v5: Postulaciones avisa por SignalR después de confirmar la transacción, y Notificaciones solo WhatsApp y correo.
 
+**Cómo funciona:** Postulaciones consume sus propios `PostulacionCreada` y `EstatusCambiado`. La Outbox los entrega solo después de confirmar la transacción, y luego los reenvía al hub. Así también llegan los cierres automáticos por `VacanteCerrada`.
+
+**Conexión (Frontend):**
+
+```js
+const conexion = new signalR.HubConnectionBuilder()
+  .withUrl("http://localhost:5000/hubs/estatus", { accessTokenFactory: () => jwt })
+  .withAutomaticReconnect()
+  .build();
+conexion.on("estatusCambiado", aviso => { /* actualizar la postulación aviso.postulacionId */ });
+conexion.on("postulacionCreada", aviso => { /* solo reclutador: refrescar el panel */ });
+await conexion.start();
+```
+
+| Quién | Recibe |
+|---|---|
+| Candidato | `estatusCambiado` de sus postulaciones |
+| Reclutador (con `empresa_id`) | `postulacionCreada` y `estatusCambiado` de las vacantes de su empresa |
+
+- `estatusCambiado`: `postulacionId`, `folio`, `vacanteId`, `tituloVacante`, `nombreEmpresa`, `estadoAnterior`, `estadoNuevo`, `causa`, `cambiadoEn`, `secuencia`.
+- `postulacionCreada`: `postulacionId`, `folio`, `vacanteId`, `tituloVacante`, `creadaEn`.
+- El motivo del cambio nunca viaja. Si llega un aviso con una `secuencia` menor o igual a la que ya se muestra, se ignora.
+- Sin token o con un token inválido, la conexión responde 401. El cliente solo escucha: el hub no tiene métodos para llamar.
+- Con una sola instancia de Postulaciones basta. Con varias, haría falta un backplane, como Redis.
+
 ## 8. Decisiones por acordar
 
 | # | Pregunta | Propuesta | Con quién |

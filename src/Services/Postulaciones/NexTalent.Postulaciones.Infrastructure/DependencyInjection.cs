@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexTalent.Postulaciones.Application;
 using NexTalent.Postulaciones.Infrastructure.Data;
 using NexTalent.Postulaciones.Infrastructure.Mensajeria;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         servicios.AddScoped<ServicioCandidato>();
         servicios.AddScoped<ServicioReclutador>();
         servicios.AddScoped<ServicioCierre>();
+        // La API registra antes su implementacion con SignalR; si no hay, no se avisa.
+        servicios.TryAddSingleton<IAvisosTiempoReal, SinAvisosTiempoReal>();
         return servicios;
     }
 
@@ -66,6 +69,7 @@ public static class DependencyInjection
         x.AddConsumer<VacantePublicadaConsumidor>();
         x.AddConsumer<VacanteCerradaConsumidor>();
         x.AddConsumer<PerfilHabilidadesActualizadoConsumidor>();
+        x.AddConsumer<AvisosTiempoRealConsumidor>();
     }
 
     /// <summary>El historial de migraciones va en el esquema del servicio, para no chocar con los demas.</summary>
@@ -83,7 +87,7 @@ public sealed class FabricaDiseno : IDesignTimeDbContextFactory<PostulacionesDbC
     public PostulacionesDbContext CreateDbContext(string[] args)
     {
         var conexion = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-            ?? "Server=localhost;Database=NexTalent;Integrated Security=false;TrustServerCertificate=True";
+            ?? "Server=localhost;Database=NexTalentDb;Integrated Security=false;TrustServerCertificate=True";
         var opciones = new DbContextOptionsBuilder<PostulacionesDbContext>();
         DependencyInjection.Configurar(opciones, conexion);
         return new PostulacionesDbContext(opciones.Options);

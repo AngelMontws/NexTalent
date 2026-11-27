@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using MassTransit.Testing;
@@ -24,6 +25,7 @@ public sealed class MensajeriaTests : IAsyncLifetime
     private readonly string _base = $"NexTalent_Pruebas_{Guid.NewGuid():N}";
     private ServiceProvider? _proveedor;
     private ITestHarness? _arnes;
+    private readonly AvisosRegistrados _avisos = new();
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -37,6 +39,7 @@ public sealed class MensajeriaTests : IAsyncLifetime
         var conexion = new SqlConnectionStringBuilder(Servidor) { InitialCatalog = _base }.ConnectionString;
         var servicios = new ServiceCollection();
         servicios.AddLogging();
+        servicios.AddSingleton<IAvisosTiempoReal>(_avisos);
         servicios.AgregarPersistencia(conexion);
         servicios.AddMassTransitTestHarness(x =>
         {
@@ -112,6 +115,7 @@ public sealed class MensajeriaTests : IAsyncLifetime
 
         await Esperar(db => db.Set<OutboxMessage>().CountAsync(Ct), pendientes => pendientes == 0);
         Assert.True(await _arnes!.Consumed.Any<PostulacionCreada>(m => m.Context.Message.Folio == folio, Ct));
+        await EsperarAviso(() => _avisos.Creadas.Any(e => e.Folio == folio && e.CandidatoId == candidato));
     }
 
     [Fact]
@@ -134,6 +138,11 @@ public sealed class MensajeriaTests : IAsyncLifetime
         await Task.Delay(1500, Ct);
         Assert.Equal(1, _arnes.Consumed.Select<EstatusCambiado>(Ct).Count(m => m.Context.Message.VacanteId == vacante));
         await EnAlcance(async db => Assert.False((await db.Vacantes.SingleAsync(v => v.VacanteId == vacante, Ct)).Abierta));
+
+        // SignalR: el candidato recibe el cierre automatico una sola vez, aunque el mensaje llego repetido.
+        await EsperarAviso(() => _avisos.Estatus.Any(e => e.VacanteId == vacante));
+        Assert.Single(_avisos.Estatus, e => e.VacanteId == vacante
+            && e.CandidatoId == candidato && e.EstadoNuevo == Estados.NoSeleccionado);
     }
 
     [Fact]
@@ -205,6 +214,16 @@ public sealed class MensajeriaTests : IAsyncLifetime
         Assert.True(await _arnes.Consumed.Any<T>(m => m.Context.MessageId == mensajeId, Ct));
     }
 
+    private static async Task EsperarAviso(Func<bool> listo)
+    {
+        for (var i = 0; i < 100 && !listo(); i++)
+        {
+            await Task.Delay(100, Ct);
+        }
+
+        Assert.True(listo(), "No llego el aviso en tiempo real.");
+    }
+
     /// <summary>Consulta hasta que se cumpla la condicion o pasen 10 segundos.</summary>
     private async Task<T> Esperar<T>(Func<PostulacionesDbContext, Task<T>> consulta, Func<T, bool> listo)
     {
@@ -246,4 +265,24 @@ public sealed class ReceptorPostulacionCreada : IConsumer<PostulacionCreada>
 public sealed class ReceptorEstatusCambiado : IConsumer<EstatusCambiado>
 {
     public Task Consume(ConsumeContext<EstatusCambiado> contexto) => Task.CompletedTask;
+}
+
+/// <summary>Hace las veces del hub de SignalR: guarda lo que se habria enviado.</summary>
+public sealed class AvisosRegistrados : IAvisosTiempoReal
+{
+    public ConcurrentQueue<EstatusCambiado> Estatus { get; } = new();
+
+    public ConcurrentQueue<PostulacionCreada> Creadas { get; } = new();
+
+    public Task EstatusCambiadoAsync(EstatusCambiado evento, CancellationToken ct)
+    {
+        Estatus.Enqueue(evento);
+        return Task.CompletedTask;
+    }
+
+    public Task PostulacionCreadaAsync(PostulacionCreada evento, CancellationToken ct)
+    {
+        Creadas.Enqueue(evento);
+        return Task.CompletedTask;
+    }
 }
