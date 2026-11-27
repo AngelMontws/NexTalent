@@ -490,3 +490,4 @@ docker-data/
 # Frontend (npm)
 frontend/node_modules/
 frontend/dist/
+frontend/*.tsbuildinfo

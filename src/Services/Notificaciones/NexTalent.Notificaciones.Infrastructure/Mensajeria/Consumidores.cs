@@ -50,38 +50,108 @@ public sealed class ContactoActualizadoConsumidor(NotificacionesDbContext db)
     }
 }
 
-/// <summary>Registra el inicio del plazo de 10 dias habiles (RN-04) al crearse una postulacion.</summary>
-public sealed class PostulacionCreadaConsumidor(NotificacionesDbContext db)
+/// <summary>
+/// Al crearse una postulacion: inicia el plazo de 10 dias habiles (RN-04) y avisa a cada reclutador de la
+/// empresa en la bandeja web (NT-041) y, si dio su consentimiento, por WhatsApp (NT-044).
+/// Se puede repetir sin duplicar: (evento_id, usuario_id, canal) es unico.
+/// </summary>
+public sealed class PostulacionCreadaConsumidor(NotificacionesDbContext db, IWhatsapp whatsapp, TimeProvider reloj)
     : IConsumer<PostulacionCreada>
 {
-    public async Task Consume(ConsumeContext<PostulacionCreada> contexto)
-    {
-        var e = contexto.Message;
-        var ct = contexto.CancellationToken;
+    public const string PlantillaWeb = "NT-041:NuevaPostulacion";
+    public const string PlantillaWhatsapp = "NT-044:NuevaPostulacion";
 
-        var seg = await db.Seguimientos.FirstOrDefaultAsync(x => x.PostulacionId == e.PostulacionId, ct);
-        if (seg is not null)
+    public Task Consume(ConsumeContext<PostulacionCreada> contexto) =>
+        ProcesarAsync(contexto.Message, contexto.CancellationToken);
+
+    /// <summary>Separado de Consume para poder probarlo sin MassTransit.</summary>
+    public async Task ProcesarAsync(PostulacionCreada e, CancellationToken ct)
+    {
+        var ahora = reloj.GetUtcNow();
+
+        if (!await db.Seguimientos.AnyAsync(x => x.PostulacionId == e.PostulacionId, ct))
         {
-            return;
+            db.Seguimientos.Add(new PostulacionSeguimiento
+            {
+                PostulacionId = e.PostulacionId,
+                CandidatoId = e.CandidatoId,
+                VacanteId = e.VacanteId,
+                EmpresaId = e.EmpresaId,
+                Folio = e.Folio,
+                TituloVacante = e.TituloVacante,
+                EstadoActual = Estados.Enviada,
+                Pendiente = true,
+                UltimoCambioEn = e.CreadaEn,
+                Secuencia = 1,
+                Recordatorio10dEnviado = false
+            });
         }
 
-        db.Seguimientos.Add(new PostulacionSeguimiento
-        {
-            PostulacionId = e.PostulacionId,
-            CandidatoId = e.CandidatoId,
-            VacanteId = e.VacanteId,
-            EmpresaId = e.EmpresaId,
-            Folio = e.Folio,
-            TituloVacante = e.TituloVacante,
-            EstadoActual = Estados.Enviada,
-            Pendiente = true,
-            UltimoCambioEn = e.CreadaEn,
-            Secuencia = 1,
-            Recordatorio10dEnviado = false
-        });
+        // Decision 4 de contratos-eventos.md: mientras la vacante no tenga responsable, se avisa a todos los
+        // reclutadores de la empresa.
+        var reclutadores = await db.Contactos.AsNoTracking()
+            .Where(x => x.EmpresaId == e.EmpresaId && x.Rol == "Reclutador")
+            .ToListAsync(ct);
+        var yaAvisados = (await db.Notificaciones.AsNoTracking()
+                .Where(x => x.EventoId == e.EventoId)
+                .Select(x => new { x.UsuarioId, x.Canal })
+                .ToListAsync(ct))
+            .Select(x => (x.UsuarioId, x.Canal))
+            .ToHashSet();
 
+        // 1) Bandeja web: queda "Enviada" al guardarse; SignalR (Postulaciones) la hace visible al instante.
+        foreach (var r in reclutadores.Where(r => !yaAvisados.Contains((r.UsuarioId, Canal.Web))))
+        {
+            db.Notificaciones.Add(Fila(e, r.UsuarioId, Canal.Web, PlantillaWeb, EstadoEnvio.Enviada, ahora, ahora));
+        }
+
+        // Se guarda antes de enviar WhatsApp: si este paso falla y se reintenta, no se manda el mensaje dos veces.
         await db.SaveChangesAsync(ct);
+
+        // 2) WhatsApp con opt-in. Sin reintentos: el aviso principal es la bandeja web.
+        var texto = Textos.NuevaPostulacion(e.TituloVacante, e.Folio);
+        foreach (var r in reclutadores.Where(r => r is { WhatsappOptIn: true, TelefonoWhatsapp: not null, WhatsappBajaFecha: null }
+                     && !yaAvisados.Contains((r.UsuarioId, Canal.Whatsapp))))
+        {
+            ResultadoEnvio envio;
+            try
+            {
+                envio = await whatsapp.EnviarPlantillaAsync(r.TelefonoWhatsapp!, PlantillaWhatsapp, texto, ct);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or TimeoutException)
+            {
+                envio = ResultadoEnvio.Fallo("sin_conexion");
+            }
+
+            var fila = Fila(e, r.UsuarioId, Canal.Whatsapp, PlantillaWhatsapp,
+                envio.Exito ? EstadoEnvio.Enviada : EstadoEnvio.Fallida, ahora, envio.Exito ? ahora : null);
+            fila.IdExterno = envio.IdExterno;
+            fila.UltimoError = envio.CodigoError;
+            db.Notificaciones.Add(fila);
+            await db.SaveChangesAsync(ct);
+        }
     }
+
+    private static NotificacionFila Fila(
+        PostulacionCreada e, Guid usuarioId, Canal canal, string plantilla, EstadoEnvio estado,
+        DateTimeOffset ahora, DateTimeOffset? enviadaEn) => new()
+    {
+        Id = Guid.CreateVersion7(),
+        EventoId = e.EventoId,
+        UsuarioId = usuarioId,
+        Canal = canal,
+        Plantilla = plantilla,
+        EstadoEnvio = estado,
+        Intentos = 1,
+        CreadaEn = ahora,
+        EnviadaEn = enviadaEn,
+        PostulacionId = e.PostulacionId,
+        VacanteId = e.VacanteId,
+        EmpresaId = e.EmpresaId,
+        ReferenciaFolio = e.Folio,
+        TituloVacante = e.TituloVacante,
+        NombreEmpresa = e.NombreEmpresa
+    };
 }
 
 /// <summary>

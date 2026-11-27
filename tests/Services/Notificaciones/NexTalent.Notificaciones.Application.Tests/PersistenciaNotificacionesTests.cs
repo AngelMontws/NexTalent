@@ -180,6 +180,37 @@ public sealed class PersistenciaNotificacionesTests : IAsyncLifetime
         Assert.NotEmpty(_relojYCanales.Correos);
     }
 
+    [Fact]
+    public async Task PostulacionCreada_AvisaALosReclutadoresDeLaEmpresa_SinDuplicarAunqueLlegueRepetido()
+    {
+        var evento = new PostulacionCreada(Guid.NewGuid(), _relojYCanales.Ahora, Guid.NewGuid(), "NT-000777",
+            NotificacionesDbInitializer.Candidatos[0], Guid.NewGuid(), NotificacionesDbInitializer.Empresa1,
+            "Desarrollador Backend .NET Jr.", "Empresa de prueba 1", _relojYCanales.Ahora);
+
+        for (var i = 0; i < 2; i++)
+        {
+            await using var db = Nuevo();
+            await new PostulacionCreadaConsumidor(db, _relojYCanales, _relojYCanales).ProcesarAsync(evento, Ct);
+        }
+
+        await using var lectura = Nuevo();
+        var avisos = await lectura.Notificaciones.Where(x => x.EventoId == evento.EventoId).ToListAsync(Ct);
+
+        // Solo el reclutador de la empresa 1, una vez por canal (bandeja y WhatsApp con opt-in).
+        Assert.Equal(2, avisos.Count);
+        Assert.All(avisos, a => Assert.Equal(NotificacionesDbInitializer.Reclutador1, a.UsuarioId));
+        var web = Assert.Single(avisos, a => a.Canal == Canal.Web);
+        Assert.Equal(("NT-000777", EstadoEnvio.Enviada, (DateTimeOffset?)null), (web.ReferenciaFolio, web.EstadoEnvio, web.LeidaEn));
+        Assert.Single(avisos, a => a.Canal == Canal.Whatsapp && a.EstadoEnvio == EstadoEnvio.Enviada);
+
+        // El WhatsApp sale una sola vez y no lleva datos del candidato.
+        var (destino, texto) = Assert.Single(_relojYCanales.Whatsapps);
+        Assert.Equal("+525520000001", destino);
+        Assert.Contains("Folio: NT-000777", texto);
+        Assert.Contains("Una persona se postuló", texto);
+        Assert.True(await lectura.Seguimientos.AnyAsync(s => s.PostulacionId == evento.PostulacionId, Ct));
+    }
+
     private NotificacionesDbContext Nuevo()
     {
         Assert.SkipWhen(Servidor is null, "Define NEXTALENT_PRUEBAS_SQL para correr las pruebas con SQL Server.");

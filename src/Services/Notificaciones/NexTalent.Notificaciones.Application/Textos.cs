@@ -38,6 +38,18 @@ public static class Textos
         _ => throw new ArgumentOutOfRangeException(nameof(r))
     };
 
+    /// <summary>
+    /// NT-041 y NT-044: aviso al reclutador, con el texto del Manual de Identidad (seccion 07). Sin nombre,
+    /// CURP, CV ni direccion: solo puesto y folio.
+    /// </summary>
+    public static string NuevaPostulacion(string tituloVacante, string folio) => $"""
+        NexTalent | Nueva postulación
+        Una persona se postuló a tu vacante.
+        Puesto: {tituloVacante}
+        Folio: {folio}
+        Consulta el perfil en NexTalent para revisar la postulación.
+        """.ReplaceLineEndings("\n");
+
     /// <summary>P-02. El enlace de similares se omite mientras no exista la pagina.</summary>
     public static string Estatus(EstatusCambiado e, string? urlSimilares)
     {
