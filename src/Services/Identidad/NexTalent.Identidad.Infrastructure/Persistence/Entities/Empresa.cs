@@ -8,4 +8,7 @@ public sealed class Empresa
     public bool Verificada { get; set; }
     public string EstadoVerificacion { get; set; } = "Pendiente";
     public DateTime CreadaEn { get; set; }
+
+    public List<Reclutador> Reclutadores { get; set; } = [];
+    public List<BitacoraModeracionEmpresa> Bitacora { get; set; } = [];
 }

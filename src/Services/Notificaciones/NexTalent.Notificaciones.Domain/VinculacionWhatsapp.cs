@@ -90,4 +90,25 @@ public sealed class VinculacionWhatsapp(Guid usuarioId)
             Intentos = 0;
         }
     }
+
+    internal byte[]? ObtenerHash() => _hash;
+
+    internal static VinculacionWhatsapp Rehidratar(
+        Guid usuarioId,
+        string? telefono,
+        byte[]? hash,
+        int intentos,
+        DateTimeOffset? enviadoEn,
+        DateTimeOffset? bloqueadoHasta)
+    {
+        var v = new VinculacionWhatsapp(usuarioId)
+        {
+            Telefono = telefono,
+            Intentos = intentos,
+            EnviadoEn = enviadoEn,
+            BloqueadoHasta = bloqueadoHasta
+        };
+        v._hash = hash;
+        return v;
+    }
 }

@@ -77,4 +77,24 @@ public sealed class Notificacion(
             throw new InvalidOperationException("La notificacion ya termino.");
         }
     }
+
+    internal static Notificacion Rehidratar(
+        Guid id,
+        Guid eventoId,
+        Guid usuarioId,
+        Canal canal,
+        string plantilla,
+        DateTimeOffset creadaEn,
+        EstadoEnvio estado,
+        int intentos,
+        DateTimeOffset? proximoIntentoEn,
+        string? idExterno,
+        string? ultimoError) => new(id, eventoId, usuarioId, canal, plantilla, creadaEn)
+    {
+        Estado = estado,
+        Intentos = intentos,
+        ProximoIntentoEn = proximoIntentoEn,
+        IdExterno = idExterno,
+        UltimoError = ultimoError
+    };
 }

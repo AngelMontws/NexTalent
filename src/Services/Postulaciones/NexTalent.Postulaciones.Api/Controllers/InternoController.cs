@@ -35,4 +35,26 @@ public sealed class InternoController(IConfiguration configuracion, IServiceProv
 
         return Ok(await servicio.PostularDesdeWhatsappAsync(solicitud.CandidatoId, solicitud.VacanteId, ct));
     }
+
+    [HttpPost("{id:guid}/recordatorio-enviado")]
+    public async Task<IActionResult> MarcarRecordatorioEnviado(Guid id, CancellationToken ct)
+    {
+        var esperada = configuracion["Interno:ApiKey"];
+        if (esperada is not { Length: >= Seguridad.BytesMinimosClave })
+        {
+            return Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Clave interna no configurada.");
+        }
+
+        if (!Seguridad.ClaveInternaValida(Request.Headers[Cabecera], esperada))
+        {
+            return Unauthorized();
+        }
+
+        if (servicios.GetService<ServicioCierre>() is not { } cierre)
+        {
+            return Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Base de datos no configurada.");
+        }
+
+        return await cierre.MarcarRecordatorioAsync(id, ct) ? NoContent() : NotFound();
+    }
 }
