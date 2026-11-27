@@ -64,6 +64,19 @@ La validación de JWT y el límite de peticiones por usuario se agregan en la Fa
 | Notificaciones | 5004 | No (ídem) |
 | RabbitMQ (AMQP / panel web) | 5672 / 15672 | Sí |
 | SQL Server | 1433 | Sí |
+| Frontend (Vite, `npm run dev`) | 5173 | Sí: `http://localhost:5173` |
+
+## Frontend
+
+Necesita Node.js 20 o superior y el backend corriendo con `docker compose up -d`.
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Abre `http://localhost:5173`. En desarrollo, Vite reenvía `/api` y `/hubs` al gateway (`localhost:5000`), así que no hace falta CORS. Por ahora las pantallas usan los datos de prueba de `src/datos.ts`. Más detalle en [`frontend/README.md`](frontend/README.md).
 
 ## Base de datos (SQL Server)
 
@@ -111,8 +124,9 @@ dotnet test --solution NexTalent.sln
 | `src/Gateway/NexTalent.Gateway/` | API Gateway con YARP | Backend 1 | Rutas listas |
 | `src/Services/Identidad/` | Registro, login y JWT | Backend 1 | Plantilla (sin lógica) |
 | `src/Services/Vacantes/` | Vacantes, habilidades y búsqueda | Backend 1 | Plantilla (sin lógica) |
-| `src/Services/Postulaciones/` | Postulaciones, estados y SignalR | Backend 2 | Plantilla (sin lógica) |
-| `src/Services/Notificaciones/` | WhatsApp, correo y recordatorios | Backend 2 | Plantilla (sin lógica) |
+| `src/Services/Postulaciones/` | Postulaciones, estados y SignalR | Backend 2 | En curso |
+| `src/Services/Notificaciones/` | WhatsApp, correo y recordatorios | Backend 2 | En curso |
+| `frontend/` | React 18 + Vite + Tailwind | Frontend | Pantallas listas, con datos de prueba |
 | `tests/` | Pruebas xUnit | Todos | 1 proyecto (Identidad.Domain) |
 | `docker/` | Dockerfile único de .NET, imagen y script de SQL Server | Backend 1 | Listo |
 | `docker-compose.yml` | Todo el entorno local | Backend 1 | Listo |

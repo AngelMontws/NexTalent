@@ -486,3 +486,7 @@ $RECYCLE.BIN/
 !.env.example
 *.local
 docker-data/
+
+# Frontend (npm)
+frontend/node_modules/
+frontend/dist/

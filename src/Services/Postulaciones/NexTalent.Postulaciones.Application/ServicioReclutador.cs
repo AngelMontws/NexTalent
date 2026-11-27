@@ -12,7 +12,9 @@ public sealed record CandidatoDeVacante(
     EstadoPostulacion Estado,
     decimal CoincidenciaPct,
     IReadOnlyList<Guid> HabilidadesCumplidas,
-    IReadOnlyList<Guid> HabilidadesFaltantes);
+    IReadOnlyList<Guid> HabilidadesFaltantes,
+    DateTimeOffset CreadaEn,
+    DateTimeOffset EtapaActualizadaEn);
 
 /// <summary>HU-06.01 y HU-06.02.</summary>
 public sealed class ServicioReclutador(
@@ -85,6 +87,7 @@ public sealed class ServicioReclutador(
             .ToLookup(h => niveles.TryGetValue(h.HabilidadId, out var n) && n >= h.Nivel, h => h.HabilidadId);
 
         return new CandidatoDeVacante(
-            p.Id, p.Folio, p.CandidatoId, p.EstadoActual, p.CoincidenciaPct, [.. grupos[true]], [.. grupos[false]]);
+            p.Id, p.Folio, p.CandidatoId, p.EstadoActual, p.CoincidenciaPct, [.. grupos[true]], [.. grupos[false]],
+            p.CreadaEn, p.EtapaActualizadaEn);
     }
 }
