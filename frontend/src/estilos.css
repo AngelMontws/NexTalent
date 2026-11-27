@@ -1,0 +1,82 @@
+/* Carga los estilos base, componentes y utilidades de Tailwind CSS. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Define la tipografía y el suavizado global del texto. */
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-synthesis: none; -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+/* Establece colores, ancho mínimo y modo oscuro de la página. */
+body { @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100; min-width: 320px; }
+/* Crea clases CSS propias con nombres en español. */
+@layer components {
+  /* Panel reutilizable con borde y sombras ligeras. */
+  .panel { @apply rounded-2xl border border-slate-200/90 bg-white shadow-suave dark:border-slate-800 dark:bg-slate-900; }
+  /* Campo de texto, lista o número, con enfoque visible. */
+  .campo { @apply w-full min-h-11 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#CD9901] focus:ring-2 focus:ring-[#F6F0B3] disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-[#514324]; }
+  /* Texto que identifica un campo de formulario. */
+  .etiqueta-campo { @apply mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-200; }
+  /* Acción principal de la pantalla. */
+  .boton-principal { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#CD9901] px-4 py-2.5 text-sm font-semibold text-[#302817] transition hover:bg-[#D4AF36] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#F6F0B3] disabled:cursor-not-allowed disabled:opacity-50; }
+  /* Acción secundaria que no domina visualmente. */
+  .boton-secundario { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-200 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800; }
+  /* Acción discreta, generalmente en menús. */
+  .boton-discreto { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF36] dark:text-slate-300 dark:hover:bg-slate-800; }
+  /* Etiqueta pequeña para estados y coincidencias. */
+  .insignia { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
+}
+* { -webkit-tap-highlight-color: transparent; }
+select { color-scheme: light; }
+.dark select { color-scheme: dark; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-300 dark:bg-slate-700; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+
+/* Paleta Golden Goose — el contraste sobre el dorado usa texto oscuro. */
+:root{--nex-gold:#CD9901;--nex-soft-gold:#D4AF36;--nex-cream:#F6F0B3;--nex-ivory:#FFFFEF;--nex-silver:#F2F2F2}
+body{background-color:var(--nex-silver)}
+.dark body{background-color:#171510}
+.panel{background-color:var(--nex-ivory)}
+.dark .panel{background-color:#242018}
+.bg-\[\#CD9901\]{color:#302817}
+.bg-\[\#CD9901\]:hover{color:#302817}
+:focus-visible{outline-color:var(--nex-soft-gold)}
+
+/* Evita desbordamientos y acomoda formularios y controles en pantallas estrechas. */
+html,body,#aplicacion{width:100%;max-width:100%;overflow-x:clip}
+*,*::before,*::after{box-sizing:border-box}
+main,section,article,aside,nav,form,.panel{min-width:0}
+button,input,textarea,select{max-width:100%}
+button{overflow-wrap:anywhere}
+.panel{overflow-wrap:anywhere}
+.boton-principal{background:#CD9901!important;border-color:#CD9901!important;color:#302817!important}
+.boton-principal:hover:not(:disabled){background:#D4AF36!important}
+.boton-principal:focus-visible,.boton-secundario:focus-visible,.boton-discreto:focus-visible{outline:3px solid #D4AF36;outline-offset:2px}
+.campo:focus{border-color:#CD9901!important;box-shadow:0 0 0 3px rgba(205,153,1,.13)}
+/* Ajustes específicos para teléfonos de pantalla pequeña. */
+@media(max-width:480px){.panel{border-radius:14px}.campo{font-size:16px}main{padding-inline:12px!important}.boton-principal,.boton-secundario{white-space:normal;text-align:center}}
+
+/* ============================================================
+   ESPACIADO RESPONSIVO — componentes del frontend React
+   Controla margen, tamaño de campos, botones y paneles.
+   ============================================================ */
+:root { --espacio-corto: 8px; --espacio-medio: 16px; --espacio-amplio: 24px; }
+html { scroll-padding-top: 84px; }
+body { line-height: 1.5; }
+#aplicacion { min-width: 320px; }
+.panel { min-width: 0; }
+.panel h1,.panel h2,.panel h3 { line-height: 1.32; }
+.campo { min-width: 0; max-width: 100%; }
+.etiqueta-campo { line-height: 1.45; }
+.boton-principal,.boton-secundario,.boton-discreto { line-height: 1.4; text-wrap: balance; }
+/* En pantallas pequeñas, la interfaz no fuerza dos columnas estrechas. */
+@media(max-width:767px) {
+  .panel { border-radius: 16px; }
+  .campo { font-size: 16px; }
+  .boton-principal,.boton-secundario { min-height: 46px; }
+  #main { padding-inline: 16px; padding-top: 24px; padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+}
+@media(max-width:375px) {
+  #main { padding-inline: 13px; }
+}
+
+/* Contraste comprobado: texto #302817 sobre dorado #CD9901 (5.65:1, WCAG AA). */

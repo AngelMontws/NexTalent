@@ -1,0 +1,67 @@
+[
+  {
+    "prueba": "Publicación de vacantes",
+    "resultado": "APROBADA",
+    "detalle": "Publicado: nombre, descripción, ubicación y rango salarial"
+  },
+  {
+    "prueba": "Postulación y aviso a reclutador",
+    "resultado": "APROBADA",
+    "detalle": "CV admitido, folio NT-3090404, notificación en reclutador"
+  },
+  {
+    "prueba": "Separación entre cuentas",
+    "resultado": "APROBADA",
+    "detalle": "Postulaciones separadas por correo durante cambios de sesión"
+  },
+  {
+    "prueba": "Registro y consentimiento",
+    "resultado": "APROBADA",
+    "detalle": "Cuenta creada, permiso WhatsApp conservado"
+  },
+  {
+    "prueba": "Sitio web de empresa",
+    "resultado": "APROBADA",
+    "detalle": "Enlace de empresa visible para candidatos tras guardar"
+  },
+  {
+    "prueba": "Contraste de botones",
+    "resultado": "APROBADA",
+    "detalle": "Botón dorado con texto oscuro (contraste 5.65:1)"
+  },
+  {
+    "prueba": "Pestaña En proceso",
+    "resultado": "APROBADA",
+    "detalle": "Pestaña En proceso sin errores de JavaScript"
+  },
+  {
+    "prueba": "Responsivo 360",
+    "resultado": "APROBADA",
+    "detalle": "360px sin desbordamiento horizontal ni errores JS"
+  },
+  {
+    "prueba": "Responsivo 390",
+    "resultado": "APROBADA",
+    "detalle": "390px sin desbordamiento horizontal ni errores JS"
+  },
+  {
+    "prueba": "Responsivo 768",
+    "resultado": "APROBADA",
+    "detalle": "768px sin desbordamiento horizontal ni errores JS"
+  },
+  {
+    "prueba": "Responsivo 1024",
+    "resultado": "APROBADA",
+    "detalle": "1024px sin desbordamiento horizontal ni errores JS"
+  },
+  {
+    "prueba": "Responsivo 1280",
+    "resultado": "APROBADA",
+    "detalle": "1280px sin desbordamiento horizontal ni errores JS"
+  },
+  {
+    "prueba": "Responsivo 1600",
+    "resultado": "APROBADA",
+    "detalle": "1600px sin desbordamiento horizontal ni errores JS"
+  }
+]

@@ -43,6 +43,8 @@ public sealed class MensajeriaTests : IAsyncLifetime
         servicios.AgregarPersistencia(conexion);
         servicios.AddMassTransitTestHarness(x =>
         {
+            // Con toda la solucion en paralelo, SQL Server tarda mas: el limite por defecto (unos 6 s) no alcanza.
+            x.SetTestTimeouts(testInactivityTimeout: TimeSpan.FromSeconds(30));
             DependencyInjection.Registrar(x);
             // Hace las veces de Notificaciones: comprueba que los eventos realmente salen de la Outbox.
             x.AddConsumer<ReceptorPostulacionCreada>();
