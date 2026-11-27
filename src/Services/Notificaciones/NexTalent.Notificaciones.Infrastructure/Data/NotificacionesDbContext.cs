@@ -69,6 +69,7 @@ public sealed class NotificacionesDbContext(DbContextOptions<NotificacionesDbCon
             e.Property(x => x.EnviadaEn).HasColumnName("enviada_en");
             e.Property(x => x.IdExterno).HasColumnName("id_externo").HasColumnType("varchar(128)");
             e.Property(x => x.UltimoError).HasColumnName("ultimo_error").HasMaxLength(500);
+            e.Property(x => x.LeidaEn).HasColumnName("leida_en");
 
             e.HasIndex(x => new { x.EventoId, x.UsuarioId, x.Canal })
                 .IsUnique()
@@ -218,6 +219,9 @@ public sealed class NotificacionFila
     public DateTimeOffset? EnviadaEn { get; set; }
     public string? IdExterno { get; set; }
     public string? UltimoError { get; set; }
+
+    /// <summary>Solo canal Web (NT-041): cuando la persona marco el aviso como leido.</summary>
+    public DateTimeOffset? LeidaEn { get; set; }
 }
 
 /// <summary>Copia local de contacto y consentimiento WhatsApp alimentada por ContactoActualizado.</summary>

@@ -8,6 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { dentroDeDias, perfilInicial } from '../datos';
 import { VACANTES_TEMPORALES } from '../api/catalogoTemporal';
 import { mensajeDeError, registrarAlVencerSesion } from '../api/cliente';
+import * as apiNotificaciones from '../api/notificaciones';
 import * as apiPostulaciones from '../api/postulaciones';
 import { conectarTiempoReal } from '../api/tiempoReal';
 import { borrarSesion, guardarSesion, leerSesionGuardada, type Sesion } from '../api/sesion';
@@ -36,6 +37,7 @@ interface EstadoAplicacion {
   actualizarPreferenciasReclutador: (siguiente: Partial<PreferenciasReclutador>) => void;
   notificacionesReclutador: NotificacionReclutador[];
   marcarNotificacionesLeidas: () => void;
+  marcarNotificacionLeida: (identificador: string) => void;
   avisoTemporal: string | null;
   notificar: (mensaje: string) => void;
 }
@@ -110,9 +112,27 @@ export function ProveedorAplicacion({ children }: { children: ReactNode; }) {
   }, [sesion, nombrePerfil, notificar]);
   useEffect(() => { void recargar(); }, [recargar]);
 
+  /** NT-041: la bandeja del reclutador vive en Notificaciones; aquí solo se muestra. */
+  const recargarBandeja = useCallback(async () => {
+    if (sesion?.rol !== 'reclutador') return;
+    try {
+      const delServidor = await apiNotificaciones.listarAvisos();
+      // Conserva los avisos que llegaron por SignalR y que Notificaciones aún no termina de guardar.
+      establecerNotificacionesReclutador(anteriores => [
+        ...anteriores.filter(n => n.identificador.startsWith('nuevo-') && !delServidor.some(s => s.idPostulacion === n.idPostulacion)),
+        ...delServidor
+      ]);
+    } catch (error) {
+      notificar(mensajeDeError(error));
+    }
+  }, [sesion, notificar]);
+  useEffect(() => { void recargarBandeja(); }, [recargarBandeja]);
+
   // Tiempo real: los avisos llegan por SignalR y se vuelve a pedir la lista para mostrar el estado exacto.
   const recargarRef = useRef(recargar);
   recargarRef.current = recargar;
+  const recargarBandejaRef = useRef(recargarBandeja);
+  recargarBandejaRef.current = recargarBandeja;
   useEffect(() => {
     if (!sesion) return;
     return conectarTiempoReal(sesion.token, {
@@ -122,13 +142,15 @@ export function ProveedorAplicacion({ children }: { children: ReactNode; }) {
       },
       alCrearPostulacion: aviso => {
         void recargarRef.current();
-        establecerNotificacionesReclutador(anteriores => anteriores.some(n => n.identificador === aviso.postulacionId) ? anteriores : [{
-          identificador: aviso.postulacionId, candidato: `Candidato ${aviso.folio}`, tituloVacante: aviso.tituloVacante,
-          empresa: empresaActual, folio: aviso.folio, fechaCreacion: aviso.creadaEn, leida: false
+        // Se muestra al instante y luego se reemplaza por el aviso guardado en Notificaciones.
+        establecerNotificacionesReclutador(anteriores => anteriores.some(n => n.idPostulacion === aviso.postulacionId) ? anteriores : [{
+          identificador: `nuevo-${aviso.postulacionId}`, idPostulacion: aviso.postulacionId, candidato: 'Nueva postulación',
+          tituloVacante: aviso.tituloVacante, empresa: empresaActual, folio: aviso.folio, fechaCreacion: aviso.creadaEn, leida: false
         }, ...anteriores]);
         notificar(`Nueva postulación · ${aviso.folio} · ${aviso.tituloVacante}`);
+        window.setTimeout(() => void recargarBandejaRef.current(), 1500);
       },
-      alReconectar: () => void recargarRef.current()
+      alReconectar: () => { void recargarRef.current(); void recargarBandejaRef.current(); }
     });
   }, [sesion, notificar, empresaActual]);
 
@@ -192,15 +214,24 @@ export function ProveedorAplicacion({ children }: { children: ReactNode; }) {
     notificar('Preferencias guardadas en este navegador');
   }, [notificar]);
 
-  const marcarNotificacionesLeidas = useCallback(() => establecerNotificacionesReclutador(lista => lista.map(n => ({ ...n, leida: true }))), []);
+  /** Marca todos los avisos; el cambio se ve de inmediato y se confirma en el servidor. */
+  const marcarNotificacionesLeidas = useCallback(() => {
+    establecerNotificacionesReclutador(lista => lista.map(n => ({ ...n, leida: true })));
+    apiNotificaciones.marcarTodasLeidas().catch(error => notificar(mensajeDeError(error)));
+  }, [notificar]);
+  /** Marca un solo aviso como leído (NT-041). */
+  const marcarNotificacionLeida = useCallback((identificador: string) => {
+    establecerNotificacionesReclutador(lista => lista.map(n => n.identificador === identificador ? { ...n, leida: true } : n));
+    if (!identificador.startsWith('nuevo-')) apiNotificaciones.marcarLeida(identificador).catch(error => notificar(mensajeDeError(error)));
+  }, [notificar]);
 
   const valor = useMemo<EstadoAplicacion>(() => ({
     sesion, entrar, salir, vacantes, postulaciones, cargandoPostulaciones, perfil, idCandidatoActual, idEmpresaActual,
     postular, publicar, moverPostulaciones, abrirPerfilCandidato, actualizarPerfil, guardarPerfil,
-    preferenciasReclutador, actualizarPreferenciasReclutador, notificacionesReclutador, marcarNotificacionesLeidas, avisoTemporal, notificar
+    preferenciasReclutador, actualizarPreferenciasReclutador, notificacionesReclutador, marcarNotificacionesLeidas, marcarNotificacionLeida, avisoTemporal, notificar
   }), [sesion, entrar, salir, vacantes, postulaciones, cargandoPostulaciones, perfil, idCandidatoActual, idEmpresaActual,
     postular, publicar, moverPostulaciones, abrirPerfilCandidato, actualizarPerfil, guardarPerfil,
-    preferenciasReclutador, actualizarPreferenciasReclutador, notificacionesReclutador, marcarNotificacionesLeidas, avisoTemporal, notificar]);
+    preferenciasReclutador, actualizarPreferenciasReclutador, notificacionesReclutador, marcarNotificacionesLeidas, marcarNotificacionLeida, avisoTemporal, notificar]);
   return <ContextoAplicacion.Provider value={valor}>{children}</ContextoAplicacion.Provider>;
 }
 /** Permite que un componente consulte los datos globales. */

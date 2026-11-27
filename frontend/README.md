@@ -13,6 +13,7 @@
 | Postular, Mis postulaciones, historial | `/api/postulaciones` | Conectado |
 | Tablero del reclutador, abrir perfil, mover etapa | `/api/postulaciones` | Conectado |
 | Avisos sin recargar | SignalR `/hubs/estatus` | Conectado |
+| Bandeja de notificaciones del reclutador (NT-041) | `/api/notificaciones` | Conectado: se guarda en el servidor y se marca leída una por una |
 | Buscar y publicar vacantes | `/api/vacantes` (Vacantes) | Pendiente de Backend 1: usa `src/api/catalogoTemporal.ts` |
 | Perfil y "Mi cuenta" | Identidad | Pendiente de Backend 1: se guarda en este navegador |
 

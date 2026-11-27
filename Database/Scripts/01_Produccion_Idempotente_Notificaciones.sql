@@ -359,3 +359,24 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [notificaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261127052505_AgregaLeidaEn_Notificaciones'
+)
+BEGIN
+    ALTER TABLE [notificaciones].[notificacion] ADD [leida_en] datetime2(0) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [notificaciones].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261127052505_AgregaLeidaEn_Notificaciones'
+)
+BEGIN
+    INSERT INTO [notificaciones].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261127052505_AgregaLeidaEn_Notificaciones', N'10.0.15');
+END;
+
+COMMIT;
+GO
+

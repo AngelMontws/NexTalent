@@ -93,6 +93,8 @@ export interface PerfilUsuario {
 /** Establece la estructura de datos de NotificacionReclutador. */
 export interface NotificacionReclutador {
   identificador: string;
+  /** Postulación que originó el aviso. */
+  idPostulacion?: string;
   candidato: string;
   tituloVacante: string;
   empresa: string;

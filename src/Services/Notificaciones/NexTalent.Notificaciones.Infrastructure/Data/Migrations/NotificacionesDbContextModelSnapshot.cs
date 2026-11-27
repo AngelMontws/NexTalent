@@ -440,6 +440,10 @@ namespace NexTalent.Notificaciones.Infrastructure.Data.Migrations
                         .HasColumnType("int")
                         .HasColumnName("intentos");
 
+                    b.Property<DateTime?>("LeidaEn")
+                        .HasColumnType("datetime2(0)")
+                        .HasColumnName("leida_en");
+
                     b.Property<string>("NombreEmpresa")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)")
