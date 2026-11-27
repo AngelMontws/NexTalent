@@ -38,6 +38,22 @@ public static class Seguridad
                     ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(clave))
                     : null
             };
+
+            // El navegador no puede mandar cabeceras en WebSocket: SignalR manda el token en ?access_token=.
+            // Solo se acepta ahi para el hub, para que no aparezca en URLs de la API.
+            o.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = contexto =>
+                {
+                    if (contexto.HttpContext.Request.Path.StartsWithSegments(TiempoReal.HubEstatus.Ruta)
+                        && contexto.Request.Query["access_token"] is { Count: > 0 } token)
+                    {
+                        contexto.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
         });
         servicios.AddAuthorization();
     }

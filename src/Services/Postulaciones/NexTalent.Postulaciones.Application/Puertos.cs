@@ -54,3 +54,22 @@ public sealed record CandidatoLocal(
     bool TieneNombre,
     bool TieneContacto,
     IReadOnlyCollection<HabilidadCandidato> Habilidades);
+
+/// <summary>
+/// Avisos en tiempo real (HU-05.02, RNF-02). Los dispara el consumidor de los propios eventos, que la Outbox
+/// entrega solo despues de confirmar la transaccion. Lo implementa la API con SignalR.
+/// </summary>
+public interface IAvisosTiempoReal
+{
+    Task EstatusCambiadoAsync(EstatusCambiado evento, CancellationToken ct);
+
+    Task PostulacionCreadaAsync(PostulacionCreada evento, CancellationToken ct);
+}
+
+/// <summary>Sin hub (pruebas o procesos sin API): no avisa a nadie.</summary>
+public sealed class SinAvisosTiempoReal : IAvisosTiempoReal
+{
+    public Task EstatusCambiadoAsync(EstatusCambiado evento, CancellationToken ct) => Task.CompletedTask;
+
+    public Task PostulacionCreadaAsync(PostulacionCreada evento, CancellationToken ct) => Task.CompletedTask;
+}
