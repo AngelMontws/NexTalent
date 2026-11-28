@@ -206,6 +206,21 @@ public class ServiciosTests
     }
 
     [Fact]
+    public async Task Mover_ElMensajeParaElCandidatoViajaEnElEvento_YSeLimitaA500()
+    {
+        var r = await _candidatos.PostularAsync(_candidato, Vacante, Ct);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => _reclutadores.MoverAsync(
+            _reclutador, r.Id, EstadoPostulacion.NoSeleccionado, null, Ct, new string('x', 501)));
+        await _reclutadores.MoverAsync(_reclutador, r.Id, EstadoPostulacion.NoSeleccionado, "privado", Ct,
+            "  Gracias por tu interés; buscamos más experiencia.  ");
+
+        var evento = Assert.Single(_m.Eventos.OfType<EstatusCambiado>());
+        Assert.Equal("Gracias por tu interés; buscamos más experiencia.", evento.MensajeCandidato);
+        Assert.DoesNotContain("privado", evento.ToString());
+    }
+
+    [Fact]
     public async Task Mover_TransicionInvalida_NoPublicaNiGuarda()
     {
         var r = await _candidatos.PostularAsync(_candidato, Vacante, Ct);

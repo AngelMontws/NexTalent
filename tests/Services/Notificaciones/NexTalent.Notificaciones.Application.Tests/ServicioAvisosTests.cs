@@ -43,6 +43,17 @@ public class ServicioAvisosTests
     }
 
     [Fact]
+    public async Task MensajeDelReclutador_VaSoloPorCorreo()
+    {
+        await _s.ProcesarAsync(Evento(Estados.Vista) with { MensajeCandidato = "Te contactaremos pronto." }, Ct);
+        Assert.DoesNotContain("Te contactaremos", Assert.Single(_m.Whatsapps).Texto);
+
+        _m.Contactos[_usuario] = new(_usuario, "a@ejemplo.com", Telefono, false);
+        await _s.ProcesarAsync(Evento(Estados.Entrevista, 3) with { MensajeCandidato = "Te contactaremos pronto." }, Ct);
+        Assert.Contains("Mensaje del reclutador:\nTe contactaremos pronto.", Assert.Single(_m.Correos).Texto);
+    }
+
+    [Fact]
     public async Task EventoRepetido_NoAvisaDosVeces()
     {
         var evento = Evento(Estados.Vista);

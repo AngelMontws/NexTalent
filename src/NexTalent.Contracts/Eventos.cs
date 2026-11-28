@@ -106,7 +106,8 @@ public sealed record PostulacionCreada(
 
 /// <summary>
 /// Cambio de etapa (T02 a T06). Estados: ver <see cref="Estados"/>. Causa: ver <see cref="CausasCambio"/>.
-/// El motivo no viaja porque puede contener texto personal.
+/// El motivo no viaja porque puede contener texto personal. MensajeCandidato (opcional, HU-06.03) es el texto
+/// que el reclutador escribió para el candidato; Notificaciones lo agrega al correo, no a la plantilla de WhatsApp.
 /// </summary>
 public sealed record EstatusCambiado(
     Guid EventoId,
@@ -122,4 +123,5 @@ public sealed record EstatusCambiado(
     string EstadoNuevo,
     string Causa,
     DateTimeOffset CambiadoEn,
-    int Secuencia);
+    int Secuencia,
+    string? MensajeCandidato = null);

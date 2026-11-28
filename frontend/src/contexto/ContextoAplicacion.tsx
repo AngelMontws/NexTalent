@@ -29,7 +29,7 @@ interface EstadoAplicacion {
   idEmpresaActual: string | null;
   postular: (idVacante: string, documentos?: InformacionDocumento[]) => Promise<string | null>;
   publicar: (datos: NuevaVacante) => void;
-  moverPostulaciones: (idsPostulaciones: string[], estado: EstadoPostulacion, motivo?: string) => Promise<void>;
+  moverPostulaciones: (idsPostulaciones: string[], estado: EstadoPostulacion, motivo?: string, mensajeCandidato?: string) => Promise<void>;
   abrirPerfilCandidato: (idPostulacion: string) => Promise<void>;
   actualizarPerfil: (siguiente: Partial<PerfilUsuario>) => void;
   guardarPerfil: (siguiente: Partial<PerfilUsuario>) => void;
@@ -169,8 +169,8 @@ export function ProveedorAplicacion({ children }: { children: ReactNode; }) {
   }, [sesion, notificar, recargar]);
 
   /** HU-06.02 y HU-06.03: mueve una o varias postulaciones; cada una se valida en el servidor. */
-  const moverPostulaciones = useCallback(async (identificadores: string[], estado: EstadoPostulacion, motivo?: string) => {
-    const resultados = await Promise.allSettled(identificadores.map(id => apiPostulaciones.moverEtapa(id, estado, motivo)));
+  const moverPostulaciones = useCallback(async (identificadores: string[], estado: EstadoPostulacion, motivo?: string, mensajeCandidato?: string) => {
+    const resultados = await Promise.allSettled(identificadores.map(id => apiPostulaciones.moverEtapa(id, estado, motivo, mensajeCandidato)));
     const fallidas = resultados.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
     const correctas = resultados.length - fallidas.length;
     if (fallidas.length === 0) notificar(`${correctas} postulación${correctas !== 1 ? 'es' : ''} movida${correctas !== 1 ? 's' : ''} a «${estado}»`);
