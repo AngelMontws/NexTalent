@@ -1,37 +1,40 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using NexTalent.Identidad.Infrastructure.Registro;
+using NexTalent.Identidad.Application.Auth;
 
 namespace NexTalent.Identidad.Api.Controllers;
 
-/// <summary>Por el gateway: /api/auth/**.</summary>
+public sealed record SolicitudLogin(
+    [Required(AllowEmptyStrings = false), MaxLength(256)] string Email,
+    [Required(AllowEmptyStrings = false), MaxLength(256)] string Password);
+
+public sealed record RespuestaLogin(string AccessToken);
+
+/// <summary>Por el gateway: POST /api/auth/login.</summary>
 [ApiController]
 [Route("auth")]
-public sealed class AuthController(IServiceProvider servicios) : ControllerBase
+public sealed class AuthController(IServiceProvider servicios, ILogger<AuthController> log) : ControllerBase
 {
-    [HttpPost("registro")]
-    [ProducesResponseType(typeof(UsuarioRegistrado), StatusCodes.Status201Created)]
-    public async Task<IActionResult> Registro(SolicitudRegistro solicitud, CancellationToken ct)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(SolicitudLogin solicitud, CancellationToken ct)
     {
-        if (servicios.GetService<ServicioRegistro>() is not { } servicio)
+        if (servicios.GetService<ServicioLogin>() is not { } servicio)
         {
             return Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Base de datos no configurada.");
         }
 
-        var r = await servicio.RegistrarAsync(solicitud, ct);
-        return r.Estado switch
+        try
         {
-            EstadoRegistro.Creado => Created($"/api/auth/usuarios/{r.Usuario!.Id}", r.Usuario),
-            EstadoRegistro.EmailDuplicado => Conflict(new ProblemDetails
-            {
-                Status = StatusCodes.Status409Conflict,
-                Title = "Este correo ya tiene una cuenta."
-            }),
-            EstadoRegistro.EmpresaNoEncontrada => NotFound(new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = "La empresa indicada no existe."
-            }),
-            _ => ValidationProblem(new ValidationProblemDetails(r.Errores!))
-        };
+            return await servicio.LoginAsync(solicitud.Email, solicitud.Password, ct) is { } token
+                ? Ok(new RespuestaLogin(token))
+                : Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Correo o contraseña incorrectos");
+        }
+        catch (JwtNoConfiguradoException ex)
+        {
+            log.LogError(ex, "Login rechazado: configuracion JWT invalida.");
+            return Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Autenticacion no disponible: JWT no configurado.");
+        }
     }
 }

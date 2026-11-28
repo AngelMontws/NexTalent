@@ -1,6 +1,10 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using NexTalent.Identidad.Application.Auth;
+using NexTalent.Identidad.Infrastructure.Auth;
 using NexTalent.Identidad.Infrastructure.Persistence;
 using NexTalent.Identidad.Infrastructure.Registro;
 
@@ -12,33 +16,15 @@ public static class DependencyInjection
         this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<IdentidadDbContext>(o => UsarSqlServer(o, connectionString));
-        services.AddSingleton(TimeProvider.System);
-        services.AddScoped<ServicioRegistro>();
-        return services;
-    }
 
-    // MassTransit + EF Outbox no estaba registrado en Identidad: se agrega aqui.
-    public static IServiceCollection AgregarMensajeria(
-        this IServiceCollection services, string host, string usuario, string contrasena)
-    {
-        services.AddMassTransit(x =>
-        {
-            x.AddEntityFrameworkOutbox<IdentidadDbContext>(o =>
-            {
-                o.UseSqlServer();
-                o.UseBusOutbox();
-            });
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IUsuariosAutenticacion, UsuariosAutenticacionRepositorio>();
+        services.AddSingleton<IVerificadorContrasena, VerificadorContrasenaPbkdf2>();
+        services.AddSingleton<IEmisorToken>(sp => new EmisorTokenJwt(
+            sp.GetRequiredService<IConfiguration>(),
+            sp.GetRequiredService<TimeProvider>()));
+        services.AddScoped<ServicioLogin>();
 
-            x.UsingRabbitMq((contexto, rabbit) =>
-            {
-                rabbit.Host(host, "/", h =>
-                {
-                    h.Username(usuario);
-                    h.Password(contrasena);
-                });
-                rabbit.ConfigureEndpoints(contexto);
-            });
-        });
         return services;
     }
 

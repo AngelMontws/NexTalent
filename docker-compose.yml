@@ -91,6 +91,9 @@ services:
     environment:
       <<: *service-env
       ASPNETCORE_HTTP_PORTS: "5001"
+      Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
+      Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
+      Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
       # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
       DatabaseSeed__RunInitializers: "true"
 
