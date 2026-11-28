@@ -84,8 +84,11 @@ export async function listarCandidatos(idVacante: string): Promise<Postulacion[]
 export const abrirPerfil = (idPostulacion: string) =>
   pedir<unknown>(`/api/postulaciones/${idPostulacion}/abrir-perfil`, { metodo: 'POST' });
 
-/** HU-06.02: mover de etapa. Reactivar desde "No seleccionado" exige motivo. */
-export const moverEtapa = (idPostulacion: string, estado: EstadoPostulacion, motivo?: string) =>
+/**
+ * HU-06.02 y HU-06.03: mover de etapa. Reactivar desde "No seleccionado" exige motivo (privado).
+ * mensajeCandidato (máx. 500) le llega al candidato por correo.
+ */
+export const moverEtapa = (idPostulacion: string, estado: EstadoPostulacion, motivo?: string, mensajeCandidato?: string) =>
   pedir<unknown>(`/api/postulaciones/${idPostulacion}/estado`, {
-    metodo: 'PATCH', cuerpo: { estado: A_SERVIDOR[estado], motivo: motivo || null }
+    metodo: 'PATCH', cuerpo: { estado: A_SERVIDOR[estado], motivo: motivo || null, mensajeCandidato: mensajeCandidato || null }
   });

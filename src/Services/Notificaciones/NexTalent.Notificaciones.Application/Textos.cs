@@ -50,6 +50,10 @@ public static class Textos
         Consulta el perfil en NexTalent para revisar la postulación.
         """.ReplaceLineEndings("\n");
 
+    /// <summary>HU-06.03: agrega el texto que escribió el reclutador, si lo hay.</summary>
+    public static string ConMensajeDelReclutador(string texto, string? mensaje) =>
+        string.IsNullOrWhiteSpace(mensaje) ? texto : $"{texto}\n\nMensaje del reclutador:\n{mensaje.Trim()}";
+
     /// <summary>P-02. El enlace de similares se omite mientras no exista la pagina.</summary>
     public static string Estatus(EstatusCambiado e, string? urlSimilares)
     {

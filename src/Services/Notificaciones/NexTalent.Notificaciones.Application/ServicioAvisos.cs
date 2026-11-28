@@ -88,9 +88,11 @@ public sealed class ServicioAvisos(
         var texto = Textos.Estatus(evento, urlSimilares(evento.VacanteId));
         try
         {
+            // HU-06.03 y decision 5: el mensaje del reclutador va solo por correo; WhatsApp usa la plantilla fija.
             return n.Canal == Canal.Whatsapp
                 ? await whatsapp.EnviarPlantillaAsync(contacto.TelefonoWhatsapp!, n.Plantilla, texto, ct)
-                : await correo.EnviarAsync(contacto.Email, "NexTalent | Actualización de postulación", texto, ct);
+                : await correo.EnviarAsync(contacto.Email, "NexTalent | Actualización de postulación",
+                    Textos.ConMensajeDelReclutador(texto, evento.MensajeCandidato), ct);
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or TimeoutException
             || (ex is TaskCanceledException && !ct.IsCancellationRequested))

@@ -52,13 +52,23 @@ public sealed class ServicioReclutador(
         return Describir(p, vacante, await replicas.ObtenerCandidatoAsync(p.CandidatoId, ct));
     }
 
+    public const int MaximoMensajeCandidato = 500;
+
+    /// <param name="mensajeCandidato">HU-06.03: texto para el candidato (máx. 500). Viaja en el evento.</param>
     public async Task<EstadoPostulacion> MoverAsync(
-        Usuario usuario, Guid postulacionId, EstadoPostulacion destino, string? motivo, CancellationToken ct)
+        Usuario usuario, Guid postulacionId, EstadoPostulacion destino, string? motivo, CancellationToken ct,
+        string? mensajeCandidato = null)
     {
+        var mensaje = string.IsNullOrWhiteSpace(mensajeCandidato) ? null : mensajeCandidato.Trim();
+        if (mensaje is { Length: > MaximoMensajeCandidato })
+        {
+            throw new ArgumentException("El mensaje para el candidato no puede pasar de 500 caracteres.", nameof(mensajeCandidato));
+        }
+
         var (p, vacante) = await CargarAsync(usuario, postulacionId, ct);
 
         var cambio = p.Mover(destino, usuario.Id, vacante.Abierta, motivo, reloj.GetUtcNow());
-        await GuardarCambioAsync(p, vacante, cambio, ct);
+        await GuardarCambioAsync(p, vacante, cambio, ct, mensaje);
         return p.EstadoActual;
     }
 
@@ -71,9 +81,10 @@ public sealed class ServicioReclutador(
         return (p, vacante);
     }
 
-    private async Task GuardarCambioAsync(Postulacion p, VacanteLocal v, CambioEstado cambio, CancellationToken ct)
+    private async Task GuardarCambioAsync(
+        Postulacion p, VacanteLocal v, CambioEstado cambio, CancellationToken ct, string? mensajeCandidato = null)
     {
-        await unidad.PublicarAsync(Eventos.Cambio(p, v, cambio), ct);
+        await unidad.PublicarAsync(Eventos.Cambio(p, v, cambio) with { MensajeCandidato = mensajeCandidato }, ct);
         await unidad.GuardarAsync(ct);
     }
 

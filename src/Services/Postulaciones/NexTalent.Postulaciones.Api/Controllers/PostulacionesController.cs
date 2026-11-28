@@ -7,7 +7,8 @@ namespace NexTalent.Postulaciones.Api.Controllers;
 
 public sealed record SolicitudPostular(Guid VacanteId);
 
-public sealed record SolicitudMover(EstadoPostulacion Estado, string? Motivo);
+/// <summary>Motivo: privado, queda en el historial. MensajeCandidato: lo recibe el candidato por correo (HU-06.03).</summary>
+public sealed record SolicitudMover(EstadoPostulacion Estado, string? Motivo, string? MensajeCandidato = null);
 
 /// <summary>
 /// Por el gateway: /api/postulaciones/**. Los permisos por rol, propiedad y empresa los revisa Application.
@@ -50,7 +51,7 @@ public sealed class PostulacionesController(IServiceProvider servicios) : Contro
     [HttpPatch("{id:guid}/estado")]
     public Task<IActionResult> Mover(Guid id, SolicitudMover solicitud, CancellationToken ct) =>
         Con<ServicioReclutador>(async (s, u) =>
-            Ok(new { estado = await s.MoverAsync(u, id, solicitud.Estado, solicitud.Motivo, ct) }));
+            Ok(new { estado = await s.MoverAsync(u, id, solicitud.Estado, solicitud.Motivo, ct, solicitud.MensajeCandidato) }));
 
     /// <summary>503 si la base de datos no esta configurada.</summary>
     private async Task<IActionResult> Con<TServicio>(Func<TServicio, Usuario, Task<IActionResult>> accion)
