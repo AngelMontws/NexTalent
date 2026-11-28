@@ -31,13 +31,14 @@ export function conectarTiempoReal(token: string, manejadores: {
   conexion.onreconnected(() => manejadores.alReconectar());
 
   let cerrada = false;
-  const iniciar = async (intento = 0): Promise<void> => {
-    try {
-      await conexion.start();
-    } catch {
-      if (!cerrada && intento < 5) window.setTimeout(() => void iniciar(intento + 1), 2000 * (intento + 1));
-    }
+  let arranque: Promise<void> = Promise.resolve();
+  const iniciar = (intento = 0) => {
+    arranque = conexion.start().catch(() => {
+      if (!cerrada && intento < 5) window.setTimeout(() => { if (!cerrada) iniciar(intento + 1); }, 2000 * (intento + 1));
+    });
   };
-  void iniciar();
-  return () => { cerrada = true; void conexion.stop(); };
+  iniciar();
+  // No se detiene a media negociación ("The connection was stopped during negotiation"): primero se espera
+  // a que termine de arrancar. Pasa en desarrollo porque React.StrictMode monta y desmonta dos veces.
+  return () => { cerrada = true; void arranque.finally(() => conexion.stop()); };
 }
