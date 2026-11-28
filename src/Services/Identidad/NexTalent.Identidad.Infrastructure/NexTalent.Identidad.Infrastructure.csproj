@@ -6,9 +6,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NexTalent.Identidad.Application\NexTalent.Identidad.Application.csproj" />
+    <ProjectReference Include="..\..\..\NexTalent.Contracts\NexTalent.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
   </ItemGroup>

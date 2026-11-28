@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NexTalent.Identidad.Infrastructure.Persistence.Configurations;
 using NexTalent.Identidad.Infrastructure.Persistence.Entities;
@@ -18,11 +19,15 @@ public sealed class IdentidadDbContext(DbContextOptions<IdentidadDbContext> opti
     public DbSet<Reclutador> Reclutadores => Set<Reclutador>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Esquema);
+
+        // Transactional Outbox / Inbox de MassTransit (RNF-09).
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
         modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
         modelBuilder.ApplyConfiguration(new CandidatoConfiguration());
