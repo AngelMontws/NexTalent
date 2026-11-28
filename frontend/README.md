@@ -8,7 +8,7 @@
 
 | Parte | Origen | Estado |
 |---|---|---|
-| Inicio de sesión | `POST /api/auth/login` (Identidad) | **Temporal en desarrollo** (ver abajo) |
+| Inicio de sesión | `POST /api/auth/login` (Identidad) | Conectado |
 | Registro | `POST /api/auth/registro` (Identidad) | Pendiente de Backend 1 (muestra "todavía no disponible") |
 | Postular, Mis postulaciones, historial | `/api/postulaciones` | Conectado |
 | Tablero del reclutador, abrir perfil, mover etapa | `/api/postulaciones` | Conectado |
@@ -19,9 +19,9 @@
 
 **El rol sale del token:** ya no hay "Entrar como…", "Cambiar de rol" ni "Restaurar datos".
 
-### Cuentas de prueba (solo `npm run dev`)
+### Cuentas de prueba
 
-Mientras Identidad no tenga su login, `desarrollo/loginTemporal.ts` responde `/api/auth/login` con las cuentas que siembra la base de datos y firma el JWT con la `JWT_KEY` del `.env`. Si Identidad ya responde, se usa el login real. No entra en `npm run build`.
+El inicio de sesión es el real de Identidad (`POST /api/auth/login`). Las cuentas las siembra la base de datos en desarrollo:
 
 | Correo | Rol |
 |---|---|
@@ -29,7 +29,7 @@ Mientras Identidad no tenga su login, `desarrollo/loginTemporal.ts` responde `/a
 | `reclutador1@empresa1.mx` | Reclutador (Empresa de prueba 1) |
 | `reclutador2@empresa2.mx` | Reclutador (Empresa de prueba 2) |
 
-Contraseña de todas: `NexTalent2026!` (la misma del seeder de Identidad; se cambia con `SEED_DEFAULT_PASSWORD`).
+Contraseña de todas: `NexTalent2026!` (se cambia con `SEED_DEFAULT_PASSWORD`). La sesión dura `JWT_EXPIRES_MINUTES` (480 por defecto).
 
 Proyecto de demostración basado en el frontend anterior de NexTalent. Conserva el logotipo del maletín con engranaje, la paleta dorada, el inicio de sesión, el registro, las pantallas del candidato, el panel del reclutador y la interfaz responsiva.
 

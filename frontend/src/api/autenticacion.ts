@@ -1,7 +1,7 @@
 /**
  * NexTalent — autenticacion
  * Inicio de sesión y registro con Identidad (Backend 1), por el gateway en /api/auth.
- * Contrato propuesto: POST /api/auth/login { email, password } → 200 { accessToken }.
+ * POST /api/auth/login { email, password } → 200 { accessToken } (Identidad, #63).
  */
 import { ErrorApi, pedir } from './cliente';
 import { crearSesion, type Sesion } from './sesion';

@@ -48,8 +48,9 @@ export async function pedir<T>(ruta: string, opciones: { metodo?: string; cuerpo
   try { datos = texto ? JSON.parse(texto) : undefined; } catch { /* La respuesta no era JSON. */ }
 
   if (!respuesta.ok) {
-    const problema = (datos ?? {}) as { title?: string; detail?: string; faltantes?: string[] };
-    const mensaje = problema.detail || problema.title || MENSAJES[respuesta.status] || `Error ${respuesta.status}`;
+    // ProblemDetails (title/detail) o la respuesta de Notificaciones ({ exito, mensaje }).
+    const problema = (datos ?? {}) as { title?: string; detail?: string; mensaje?: string; faltantes?: string[] };
+    const mensaje = problema.detail || problema.mensaje || problema.title || MENSAJES[respuesta.status] || `Error ${respuesta.status}`;
     throw new ErrorApi(respuesta.status, mensaje, problema.faltantes ?? []);
   }
   return datos as T;
