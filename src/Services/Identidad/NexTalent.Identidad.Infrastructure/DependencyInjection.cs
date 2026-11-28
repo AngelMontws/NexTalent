@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NexTalent.Identidad.Application.Auth;
 using NexTalent.Identidad.Infrastructure.Auth;
 using NexTalent.Identidad.Infrastructure.Persistence;
+using NexTalent.Identidad.Infrastructure.Registro;
 
 namespace NexTalent.Identidad.Infrastructure;
 

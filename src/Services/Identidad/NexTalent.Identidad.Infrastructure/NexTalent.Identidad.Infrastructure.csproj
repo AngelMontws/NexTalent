@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NexTalent.Identidad.Application\NexTalent.Identidad.Application.csproj" />
+    <ProjectReference Include="..\..\..\NexTalent.Contracts\NexTalent.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
