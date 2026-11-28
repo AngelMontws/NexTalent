@@ -94,6 +94,8 @@ services:
       Jwt__Issuer: ${JWT_ISSUER:-NexTalent.Identidad}
       Jwt__Audience: ${JWT_AUDIENCE:-NexTalent.Api}
       Jwt__Key: ${JWT_KEY:?Falta JWT_KEY en el archivo .env}
+      # Duracion del token. No hay refresh token: con 15 min la sesion se cierra a media demo.
+      Jwt__ExpiresMinutes: ${JWT_EXPIRES_MINUTES:-480}
       # Solo desarrollo: aplica migraciones y carga datos de prueba al arrancar.
       DatabaseSeed__RunInitializers: "true"
 
